@@ -5,6 +5,8 @@
 Report/**
 STDF/**
 **test**
+**/post.json
+**/cfg.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
