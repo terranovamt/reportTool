@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://www.st.com/etc/clientlibs/st-site/media/app/images/favicon-16.png" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Report Tool</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="../css/index.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center">Report Tool</h1>
+      <form id="submitForm">
+        <div class="table-responsive">
+          <table
+            id="authorTable"
+            class="table table-bordered table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <!-- Headers will be added dynamically -->
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows will be added here dynamically -->
+            </tbody>
+          </table>
+        </div>
+        <div class="table-responsive">
+          <table
+            id="dataTable"
+            class="table table-bordered table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <!-- Headers will be added dynamically -->
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows will be added here dynamically -->
+            </tbody>
+          </table>
+        </div>
+        <button
+          type="submit"
+          class="btn btn-primary">
+          Submit
+        </button>
+      </form>
+    </div>
+    <script src="../js/index.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
