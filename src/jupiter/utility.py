@@ -88,30 +88,26 @@ def write_log(message, filename = "../run.log"):
     import os
     import datetime
 
-    last_timestamp = datetime.datetime.now()
-    # filename = os.path.abspath("src/run.log")
-    # print(filename)
     now = datetime.datetime.now()
     timestamp = now.strftime("[%Y-%m-%d %H:%M:%S]")
     diff = ""
-    if last_timestamp is not None:
-        time_diff = now - last_timestamp
-        diff = " (+{}) |--> ".format(str(time_diff).split(".")[0])
+    # diff = " (+{}) |--> ".format(str(time_diff).split(".")[0])
+
     try:
         with open(filename, "r+") as file:
-            content = file.read()
-            file.seek(0, 0)
-            file.write(
-                timestamp + 
-                # diff + 
-                " |--> " +
-                message + 
-                "\n" + 
-                content
-            )
+            content = file.readlines()
+            # Limit the content to the last 999 lines
+            if len(content) >= 1000:
+                content = content[:999]
+            # Insert the new log entry at the beginning
+            content.insert(0, timestamp + " |--> " + message + "\n")
+            # Write back the content to the file
+            file.seek(0)
+            file.writelines(content)
+            file.truncate()
     except FileNotFoundError:
         with open(filename, "w") as file:
-            file.write(timestamp + diff + message + "\n")
+            file.write(timestamp + " |--> " + message + "\n")
             file.write(timestamp + " Log file created.\n")
     except OSError as e:
         print(f"An error occurred: {e}")

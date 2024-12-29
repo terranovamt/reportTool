@@ -44,13 +44,40 @@ def process_all_wafers(parameter, csv_folder):
     Returns:
         list: List of CSV files generated.
     """
-    list_csv_files = []
     for i in range(1, 25):
+        parameter["WAFER"] = i
         stdf_folders = get_stdf_folder(parameter, i)
         debug and print(stdf_folders, csv_folder)
         for stdf_folder in stdf_folders:
-            list_csv_files.append(stdf2csv(stdf_folder, csv_folder))
-    return list_csv_files
+            csv_files = stdf2csv([stdf_folder], csv_folder)
+            for csv_file in csv_files: 
+                parameter["TEST_NUM"] = []
+                print(f"|--> WAFER: {parameter['WAFER']}/25")
+                process_composite(parameter, csv_file)
+    
+
+def process_multi_wafers(parameter, csv_folder):
+    """
+    Process all wafers and convert STDF files to CSV.
+
+    Args:
+        parameter (dict): Parameters containing LOT, WAFER, and TYPE.
+        csv_folder (str): Path to the CSV folder.
+
+    Returns:
+        list: List of CSV files generated.
+    """
+    wafers = parameter["WAFER"].replace(" ","").split(",")
+    for wafer in wafers:
+        parameter["WAFER"] = wafer
+        stdf_folders = get_stdf_folder(parameter, wafer)
+        debug and print(stdf_folders, csv_folder)
+        for stdf_folder in stdf_folders:
+            csv_files = stdf2csv([stdf_folder], csv_folder)
+            for csv_file in csv_files: 
+                parameter["TEST_NUM"] = []
+                print(f"|--> WAFER: {parameter['WAFER']}")
+                process_composite(parameter, csv_file)
 
 
 def process_single_wafer(parameter, csv_folder):
@@ -66,7 +93,11 @@ def process_single_wafer(parameter, csv_folder):
     """
     stdf_folders = get_stdf_folder(parameter, parameter["WAFER"])
     debug and print(stdf_folders, csv_folder)
-    return stdf2csv(stdf_folders, csv_folder)
+    for stdf_folder in stdf_folders:
+            csv_files = stdf2csv([stdf_folder], csv_folder)
+            for csv_file in csv_files: 
+                parameter["TEST_NUM"] = []
+                process_composite(parameter, csv_file)
 
 
 def get_stdf_folder(parameter, wafer):
@@ -138,7 +169,7 @@ def process_composite(parameter, csv_file):
     """
     try:
         tsr = pd.read_csv(os.path.abspath(f"src/csv/{csv_file}.tsr.csv"))
-
+        debug and print(tsr)
         if str(parameter["COM"]).upper() == "ALL":
             composites = (
                 tsr["TEST_NAM"]
@@ -198,7 +229,7 @@ def write_config_file(parameter):
         with open(file=cfgfile, mode="wt", encoding="utf-8") as file:
             for index, value in parameter.items():
                 file.write(f"{index}:{value}\n")
-        print("\n|--> TITLE:", parameter["TITLE"])
+        print("|--> TITLE:", parameter["TITLE"])
     except Exception as e:
         print(f"Error writing the configuration file: {e}")
 
@@ -218,12 +249,12 @@ def convert_notebook_to_html(parameter):
     dir_output = os.path.abspath(
         os.path.join(
             "Report",
+            f"{parameter['LOT']}",
             f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
             parameter["FLOW"],
             parameter["TYPE"].upper(),
         )
     )
-
     if not os.path.exists(dir_output):
         os.makedirs(dir_output)
 
@@ -240,10 +271,9 @@ def convert_notebook_to_html(parameter):
     else:
         print(f"ERROR: execution failed {cmd}")
 
-    timeendsub = datetime.datetime.now()
-    timeexecsub = timeendsub - timestartsub
     uty.write_log("exec DONE",FILENAME)
-    print("|--> Execution time for '", parameter["TITLE"], "' Time :", timeexecsub)
+    
+    return timestartsub
 
 
 def rework_report(parameter):
@@ -254,7 +284,14 @@ def rework_report(parameter):
         parameter (dict): Parameters for processing.
     """
     report_path = os.path.abspath(
-        f'./Report/{parameter["LOT"]}_{str(parameter["WAFER"]).rjust(2, "0")}/{parameter["FLOW"]}/{parameter["TYPE"].upper()}/{parameter["TITLE"]} {parameter["FLOW"]}_{parameter["TYPE"].lower()}.html'
+        os.path.join(
+            "./Report",
+            f"{parameter['LOT']}",
+            f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
+            parameter["FLOW"],
+            parameter["TYPE"].upper(),
+            f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html"
+        )
     )
     try:
         with fileinput.FileInput(
@@ -311,15 +348,13 @@ def pre_exec(parameter):
     csv_folder = os.path.abspath("src/csv")
 
     if parameter["WAFER"] == "all":
-        list_csv_files = process_all_wafers(parameter, csv_folder)
+        process_all_wafers(parameter, csv_folder)
+    elif "," in parameter["WAFER"]:
+        process_multi_wafers(parameter, csv_folder)
     else:
-        list_csv_files = process_single_wafer(parameter, csv_folder)
+        process_single_wafer(parameter, csv_folder)
 
     uty.write_log("STDF2CSV DONE",FILENAME)
-
-    for csv_file in list_csv_files:
-        parameter["TEST_NUM"] = []
-        process_composite(parameter, csv_file)
 
 
 def exec(parameter):
@@ -331,11 +366,11 @@ def exec(parameter):
     """
     rework_stdf(parameter)
     write_config_file(parameter)
-    convert_notebook_to_html(parameter)
-    post_exec(parameter)
+    timestartsub = convert_notebook_to_html(parameter)
+    post_exec(parameter,timestartsub)
 
 
-def post_exec(parameter):
+def post_exec(parameter,timestartsub):
     """
     Post-execution function to handle final steps.
 
@@ -345,6 +380,9 @@ def post_exec(parameter):
     uty.write_log("postexec START",FILENAME)
     rework_report(parameter)
     uty.write_log("postexec DONE",FILENAME)
+    timeendsub = datetime.datetime.now()
+    timeexecsub = timeendsub - timestartsub
+    print("|--> Execution time:", timeexecsub,"\n")
 
 def generate(data):
     '''Genrate forn HTML GUI'''
@@ -357,15 +395,16 @@ def generate(data):
         if entry['Run'] == '1'
     ])
     parameters.index += 1
-    print(parameters)
+    print(parameters.to_string())
+    print("\n")
     os.environ["PYDEVD_DISABLE_FILE_VALIDATION"] = "1"
     for _, parameter in parameters.iterrows():
-        uty.write_log("START",FILENAME)
+        uty.write_log(f"START {parameter['TITLE']}",FILENAME)
         pre_exec(parameter)
         uty.write_log("DONE",FILENAME)
     timeend = datetime.datetime.now()
     timeexec = timeend - timestart
-    print("\n|--> Total execution time:", timeexec)
+    print("|--> Total execution time:", timeexec)
 
 def main():
     """
@@ -385,10 +424,10 @@ def main():
     #     pre_exec(parameter)
     # timeend = datetime.datetime.now()
     # timeexec = timeend - timestart
-    # print("\n|--> Total execution time:", timeexec)
+    # print("|--> Total execution time:", timeexec)
 
 
 if __name__ == "__main__":
     print("\n\n--- REPORT GENERATOR ---")
     main()
-    print("\n|-->END\n")
+    print("|-->END\n")

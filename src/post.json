@@ -14,10 +14,10 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "P6AX86",
-            "Wafer": "1",
+            "Wafer": "1, 2",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "0"
+            "Run": "1"
         },
         {
             "Title": "-",
@@ -30,7 +30,7 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "0"
+            "Run": "1"
         },
         {
             "Title": "-",
@@ -43,13 +43,13 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "0"
+            "Run": "1"
         },
         {
             "Title": "HSI",
             "COM": "HSI",
             "Flow": "EWS",
-            "Type": "STD",
+            "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "P6AX86",
