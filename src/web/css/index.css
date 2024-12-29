@@ -1,48 +1,72 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+/* Define color variables for easier maintenance */
+:root {
+  --primary-color: #03234B;
+  --secondary-color: #3CB4E6;
+  --highlight-color: #FFD200;
+  --highlight-secondary-color: #E6007E;
+  --background-color: #f8f9fa;
+  --text-color: #ffffff;
+  --table-row-even-bg: #e9ecef;
+  --table-row-odd-bg: #ffffff;
+  --table-row-hover-bg: #d6e0f5;
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --overlay-content-bg: white;
+  --overlay-content-shadow: rgba(0, 0, 0, 0.25);
+  --checkbox-bg: linear-gradient(to bottom, #b3b3b3, #e6e6e6);
+  --checkbox-checked-bg: linear-gradient(to bottom, #3cb4e6, #9dd9f2);
+  --checkbox-hover-bg: linear-gradient(to bottom, #dddddd, #fefefe);
 }
 
+/* Global styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  -webkit-user-select: none;
+}
+
+/* Container styles */
 .container {
   margin-top: 50px;
 }
 
+/* Heading styles */
 h1 {
-  color: #03234B;
+  color: var(--primary-color);
 }
 
-.table  {
-  color: #03234B;
-}
-
-.table tbody td:focus {
-  outline-color: #3CB4E6;
+/* Table styles */
+.table {
+  color: var(--primary-color);
 }
 
 .table thead th {
-  background-color: #03234B;
-  color: #ffffff;
+  background-color: var(--primary-color);
+  color: var(--text-color);
   text-align: center;
   vertical-align: middle;
 }
 
+.table tbody td:focus {
+  outline-color: var(--secondary-color);
+}
+
 .table tbody tr:nth-child(even) {
-  background-color: #e9ecef;
+  background-color: var(--table-row-even-bg);
 }
 
 .table tbody tr:nth-child(odd) {
-  background-color: #ffffff;
+  background-color: var(--table-row-odd-bg);
 }
 
 .table tbody tr:hover {
-  color: #03234B;
-  background-color: #d6e0f5;
+  color: var(--primary-color);
+  background-color: var(--table-row-hover-bg);
 }
 
 .table .thead-dark th {
-  color: #fff;
-  background-color: #03234B;
-  border-color: #03234B;
+  color: var(--text-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .table tbody td {
@@ -51,28 +75,28 @@ h1 {
 }
 
 .table .highlight {
-  background-color: #FFD200;
+  background-color: var(--highlight-color);
   font-weight: bold;
 }
 
 .table .sub-highlight {
-  background-color: #3CB4E6;
+  background-color: var(--secondary-color);
 }
 
+/* Button styles */
 .btn-primary {
-  background-color: #03234B;
-  border-color: #03234B;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary:visited {
-  background-color: #3CB4E6;
-  border-color: #3CB4E6;
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
 }
 
-
-/* Style for the toggle button */
+/* Toggle button styles */
 .checkbox-apple {
   position: relative;
   width: 50px;
@@ -91,7 +115,7 @@ h1 {
   width: 50px;
   height: 25px;
   border-radius: 50px;
-  background: linear-gradient(to bottom, #b3b3b3, #e6e6e6);
+  background: var(--checkbox-bg);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -110,7 +134,7 @@ h1 {
 }
 
 .checkbox-apple input[type="checkbox"]:checked + label {
-  background: linear-gradient(to bottom, #3cb4e6, #9dd9f2);
+  background: var(--checkbox-checked-bg);
 }
 
 .checkbox-apple input[type="checkbox"]:checked + label:after {
@@ -118,8 +142,9 @@ h1 {
 }
 
 .checkbox-apple label:hover {
-  background: linear-gradient(to bottom, #dddddd, #fefefe);
+  background: var(--checkbox-hover-bg);
 }
+
 .checkbox-apple label:hover:after {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -132,4 +157,92 @@ h1 {
   height: 25px;
   opacity: 0;
   cursor: pointer;
+}
+
+/* Overlay styles */
+#overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-bg);
+  z-index: 1000;
+  cursor: pointer;
+}
+
+#overlayContent {
+  position: absolute;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Create a responsive grid with multiple columns */
+  gap: 10px;
+  max-height: 80vh; /* Limit the height of the overlay content */
+  min-width: 50%; /* Limit the height of the overlay content */
+  overflow-y: auto; /* Enable vertical scrolling */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--overlay-content-bg);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--overlay-content-shadow);
+  text-align: center;
+}
+
+#overlayContent button {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#overlayContent button:hover {
+  background-color: var(--secondary-color);
+}
+
+#overlayContent button.selected {
+  background-color: var(--highlight-color);
+}
+
+/* Close button styles */
+.close-container {
+  position: absolute;
+  top: 1px;
+  right: 7%;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+}
+
+.leftright, .rightleft {
+  height: 3px;
+  width: 25px;
+  position: absolute;
+  margin-top: 20px;
+  background-color: var(--secondary-color);
+  border-radius: 2px;
+  transition: all .3s ease-in;
+}
+
+.leftright {
+  transform: rotate(45deg);
+}
+
+.rightleft {
+  transform: rotate(-45deg);
+}
+
+.close-container:hover .leftright {
+  transform: rotate(-45deg);
+  background-color: var(--highlight-secondary-color);
+}
+
+.close-container:hover .rightleft {
+  transform: rotate(45deg);
+  background-color: var(--highlight-secondary-color);
 }

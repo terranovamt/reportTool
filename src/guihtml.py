@@ -35,7 +35,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(data.encode())
             return
         else: 
-            self.path = '/html/404.html'
+            if not os.path.isfile(os.path.join(WEB_DIR, self.path.lstrip('/'))):
+                self.path = '/html/404.html'
         return super().do_GET()
 
     def do_POST(self):

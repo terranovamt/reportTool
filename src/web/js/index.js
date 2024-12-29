@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Get references to the DOM elements
   const authorTable = document.getElementById('authorTable').getElementsByTagName('tbody')[0];
   const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
   const submitForm = document.getElementById('submitForm');
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const authorInfo = jsonData.authorInfo;
       const data = jsonData.data;
 
+      // Determine data fields from the JSON data
       if (data.length > 0) {
         dataFields = Object.keys(data[0]).filter((field) => !authorFields.includes(field));
       }
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const authorData = {};
     const data = [];
 
+    // Collect and validate author data
     let allAuthorFieldsFilled = true;
     authorFields.forEach((field, j) => {
       const value = authorRow.getElementsByTagName('td')[j].innerText.trim();
@@ -62,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    // Collect and validate data rows
     for (let i = 0; i < dataRows.length; i++) {
       const cells = dataRows[i].getElementsByTagName('td');
       const rowData = {};
@@ -102,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Redirect to loading page immediately after form submission
     window.location.href = '/loading';
 
+    // Submit the form data to the server
     fetch('/submit', {
       method: 'POST',
       headers: {
@@ -158,9 +163,12 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
       } else {
-        cell.contentEditable = editable;
+        // Make cells editable except for specific fields
+        if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
+          cell.contentEditable = editable;
+        }
         cell.innerText = rowData[field] || '';
-        if (editable) {
+        if (editable && field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
           cell.addEventListener('input', handleCellInput);
         }
       }
@@ -190,9 +198,14 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
       } else {
-        cell.contentEditable = true;
+        // Make cells editable except for specific fields
+        if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
+          cell.contentEditable = true;
+        }
         cell.innerText = '';
-        cell.addEventListener('input', handleCellInput);
+        if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
+          cell.addEventListener('input', handleCellInput);
+        }
       }
     });
     console.log('Empty row added'); // Debug log
@@ -204,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const table = row.parentElement;
     const isLastRow = row.rowIndex === table.rows.length - 1;
 
+    // Add a new empty row if the last row is filled
     if (isLastRow && allFieldsFilled(row)) {
       addEmptyRow(dataFields, table);
     }
@@ -219,4 +233,108 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     return true;
   }
+
+  // Add event listener for cell click to open overlay
+  document.addEventListener('click', function (event) {
+    const target = event.target;
+    if (target.tagName === 'TD' && target.dataset.field) {
+      const field = target.dataset.field;
+      if (field === 'Flow' || field === 'Type' || field === 'Wafer') {
+        openOverlay(field, target);
+      }
+    }
+  });
+
+  // Function to open overlay based on the field
+  function openOverlay(field, cell) {
+    const overlay = document.getElementById('overlay');
+    const overlayContent = document.getElementById('overlayContent');
+    overlayContent.innerHTML = ''; // Clear previous content
+
+    // Add close button
+    const closeButton = document.createElement('div');
+    closeButton.classList.add('close-container');
+    closeButton.innerHTML = `
+      <div class="leftright"></div>
+      <div class="rightleft"></div>
+    `;
+    closeButton.addEventListener('click', closeOverlay);
+    overlayContent.appendChild(closeButton);
+
+    if (field === 'Flow') {
+      createOptions(['EWS', 'FT'], cell);
+    } else if (field === 'Type') {
+      // createOptions(['STD', 'x30', 'CHAR'], cell);
+      createOptions(['STD', 'x30'], cell);
+    } else if (field === 'Wafer') {
+      createMultiSelectOptions(cell);
+    }
+
+    overlay.style.display = 'block';
+  }
+
+  // Function to create options for the overlay
+  function createOptions(options, cell) {
+    const overlayContent = document.getElementById('overlayContent');
+    options.forEach((option) => {
+      const button = document.createElement('button');
+      button.innerText = option;
+      button.addEventListener('click', function () {
+        cell.innerText = option;
+        closeOverlay();
+      });
+      overlayContent.appendChild(button);
+    });
+  }
+
+  // Function to create multi-select options for the overlay
+  function createMultiSelectOptions(cell) {
+    const overlayContent = document.getElementById('overlayContent');
+    const allButton = document.createElement('button');
+    allButton.innerText = 'All';
+    allButton.addEventListener('click', function () {
+      cell.innerText = 'All';
+      closeOverlay();
+    });
+    overlayContent.appendChild(allButton);
+
+    const selectedNumbers = cell.innerText.split(', ').map(Number);
+
+    for (let i = 1; i <= 25; i++) {
+      const button = document.createElement('button');
+      button.innerText = i;
+      if (selectedNumbers.includes(i)) {
+        button.classList.add('selected');
+      }
+      button.addEventListener('click', function () {
+        if (cell.innerText === 'All') {
+          cell.innerText = '';
+        }
+        if (!cell.innerText.includes(i)) {
+          cell.innerText += cell.innerText ? `, ${i}` : i;
+          button.classList.add('selected');
+        } else {
+          cell.innerText = cell.innerText
+            .split(', ')
+            .filter((num) => num != i)
+            .join(', ');
+          button.classList.remove('selected');
+        }
+      });
+      overlayContent.appendChild(button);
+    }
+  }
+
+  // Function to close the overlay
+  function closeOverlay() {
+    const overlay = document.getElementById('overlay');
+    overlay.style.display = 'none';
+  }
+
+  // Add event listener to close overlay when clicking outside of it
+  document.getElementById('overlay').addEventListener('click', function (event) {
+    if (event.target.id === 'overlay') {
+      closeOverlay();
+    }
+  });
 });
