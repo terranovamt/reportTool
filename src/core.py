@@ -1,4 +1,5 @@
 import os
+import json
 import warnings
 import datetime
 import fileinput
@@ -111,24 +112,29 @@ def get_stdf_folder(parameter, wafer):
     Returns:
         str: Constructed STDF folder path.
     """
-    if parameter["TYPE"].upper() == "CHAR":
-        return get_available_corners(
-            parameter,
-            "STDF/" + parameter["LOT"] + "/" + str(parameter["TYPE"]).upper(),
-        )
-    else:
-        return [
-            os.path.abspath(
-                "STDF/"
-                + parameter["LOT"]
-                + "/"
-                + parameter["LOT"]
-                + "_"
-                + str(wafer).rjust(2, "0")
-                + "/"
-                + str(parameter["TYPE"]).upper()
-            )
-        ]
+    try:
+        stdf_path = parameter["STDF"].get(str(wafer))
+        if not stdf_path:
+            print(f"Error: No path found for wafer {wafer}")
+            return None
+        
+        resolved_path = os.path.abspath(stdf_path)
+        
+        # Check if the directory exists
+        if not os.path.isdir(resolved_path):
+            print(f"Error: Directory {resolved_path} does not exist")
+            return None
+        
+        # Check if there is at least one .std or .stdf file in the directory
+        files = os.listdir(resolved_path)
+        if not any(file.endswith(('.std', '.stdf')) for file in files):
+            print(f"Error: No .std or .stdf files found in {resolved_path}")
+            return None
+        
+        return [resolved_path]
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 
 def get_available_corners(parameter, base_path="STDF"):
@@ -219,16 +225,18 @@ def process_single_composite(parameter, tsr, composite, csv_file):
 
 def write_config_file(parameter):
     """
-    Write the configuration parameters to a file.
+    Write the configuration parameters to a JSON file.
 
     Args:
         parameter (dict): Parameters for processing.
     """
-    cfgfile = f"./src/jupiter/cfg.txt"
+    cfgfile = f"./src/jupiter/cfg.json"
     try:
-        with open(file=cfgfile, mode="wt", encoding="utf-8") as file:
-            for index, value in parameter.items():
-                file.write(f"{index}:{value}\n")
+        # Convert any Series objects in the parameter dictionary to lists
+        parameter = {k: v.tolist() if isinstance(v, pd.Series) else v for k, v in parameter.items()}
+        
+        with open(cfgfile, mode="wt", encoding="utf-8") as file:
+            json.dump(parameter, file, indent=4)
         print("|--> TITLE:", parameter["TITLE"])
     except Exception as e:
         print(f"Error writing the configuration file: {e}")

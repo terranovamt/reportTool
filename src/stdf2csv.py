@@ -59,7 +59,7 @@ def delete_related_files(csv_folder, std_file_prefix):
 
 def stdf2csv(stdf_folders, csv_folder):
     for stdf_folder in stdf_folders:
-        stdf_files = rename_files(stdf_folder, ".stdf", ".std")
+        rename_files(stdf_folder, ".stdf", ".std")
         
         std_files = [f for f in os.listdir(stdf_folder) if f.endswith('.std')]
         

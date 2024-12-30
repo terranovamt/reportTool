@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let dataFields = [];
 
   // Load existing data from JSON file
-  fetch('/post.json')
+  fetch('post.json')
     .then((response) => {
       if (!response.ok) {
         throw new Error('Network response was not ok ' + response.statusText);
@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (data.length > 0) {
         dataFields = Object.keys(data[0]).filter((field) => !authorFields.includes(field));
       }
-      console.log('Fields detected from JSON:', dataFields); // Debug log
-      console.log('Data loaded from JSON:', data); // Debug log
+      // console.log('Fields detected from JSON:', dataFields); // Debug log
+      // console.log('Data loaded from JSON:', data); // Debug log
 
       // Create table headers dynamically
       createTableHeaders(authorFields, 'authorTable');
@@ -75,6 +75,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (field === 'Run') {
           const checkbox = cells[j].querySelector('.yep');
           rowData[field] = checkbox.checked ? '1' : '0';
+        } else if (field === 'STDF') {
+          const filePath = cells[j].dataset.filePath;
+          rowData[field] = filePath ? JSON.parse(filePath) : {};
         } else {
           const value = cells[j].innerText.trim();
           if (!value) {
@@ -101,6 +104,18 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    // Validate STDF paths
+    for (const rowData of data) {
+      const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer.split(', ').map(Number);
+      const stdfPaths = rowData.STDF;
+      for (const wafer of wafers) {
+        if (!stdfPaths[wafer] || stdfPaths[wafer].trim() === '') {
+          alert(`Please specify a valid STDF path for wafer ${wafer}.`);
+          return;
+        }
+      }
+    }
+
     console.log('Data to be submitted:', { authorInfo: authorData, data: data }); // Debug log
 
     // Redirect to loading page immediately after form submission
@@ -120,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           return response.text().then((data) => {
             console.log(data);
-            // window.location.href = '/loading'; // This line is no longer needed
           });
         }
       })
@@ -162,18 +176,24 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(checkbox);
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
+      } else if (field === 'STDF') {
+        updateStdfIcon(cell, JSON.stringify(rowData[field]));
+        cell.addEventListener('click', () => openOverlay(field, cell));
       } else {
         // Make cells editable except for specific fields
         if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
           cell.contentEditable = editable;
+          cell.addEventListener('input', () => {
+            const runCell = row.querySelector('td[data-field="Run"] input[type="checkbox"]');
+            if (runCell) {
+              runCell.checked = true;
+            }
+          });
         }
         cell.innerText = rowData[field] || '';
-        if (editable && field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
-          cell.addEventListener('input', handleCellInput);
-        }
       }
     });
-    console.log('Row added:', rowData); // Debug log
+    // console.log('Row added:', rowData); // Debug log
   }
 
   // Function to add an empty row to the table
@@ -197,53 +217,35 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(checkbox);
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
+      } else if (field === 'STDF') {
+        updateStdfIcon(cell, '');
+        cell.addEventListener('click', () => openOverlay(field, cell));
       } else {
         // Make cells editable except for specific fields
         if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
           cell.contentEditable = true;
+          cell.addEventListener('input', () => {
+            const runCell = row.querySelector('td[data-field="Run"] input[type="checkbox"]');
+            if (runCell) {
+              runCell.checked = true;
+            }
+          });
         }
         cell.innerText = '';
-        if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
-          cell.addEventListener('input', handleCellInput);
-        }
       }
     });
-    console.log('Empty row added'); // Debug log
+    // console.log('Empty row added'); // Debug log
   }
 
-  // Handle input event on table cells
-  function handleCellInput(event) {
-    const row = event.target.parentElement;
-    const table = row.parentElement;
-    const isLastRow = row.rowIndex === table.rows.length - 1;
-
-    // Add a new empty row if the last row is filled
-    if (isLastRow && allFieldsFilled(row)) {
-      addEmptyRow(dataFields, table);
-    }
+  // Function to update STDF icon
+  function updateStdfIcon(cell, filePath) {
+    const icon = document.createElement('img');
+    icon.classList.add('stdf-icon');
+    icon.src = filePath ? 'https://www.svgrepo.com/show/532747/file-alt.svg' : 'https://www.svgrepo.com/show/532811/file-xmark-alt-1.svg';
+    cell.innerHTML = '';
+    cell.appendChild(icon);
+    cell.dataset.filePath = filePath || '{}'; // Ensure it's a valid JSON
   }
-
-  // Check if all fields in a row are filled
-  function allFieldsFilled(row) {
-    const cells = row.getElementsByTagName('td');
-    for (let i = 0; i < cells.length; i++) {
-      if (!cells[i].innerText.trim() && !cells[i].querySelector('.checkbox-apple')) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // Add event listener for cell click to open overlay
-  document.addEventListener('click', function (event) {
-    const target = event.target;
-    if (target.tagName === 'TD' && target.dataset.field) {
-      const field = target.dataset.field;
-      if (field === 'Flow' || field === 'Type' || field === 'Wafer') {
-        openOverlay(field, target);
-      }
-    }
-  });
 
   // Function to open overlay based on the field
   function openOverlay(field, cell) {
@@ -264,10 +266,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (field === 'Flow') {
       createOptions(['EWS', 'FT'], cell);
     } else if (field === 'Type') {
-      // createOptions(['STD', 'x30', 'CHAR'], cell);
       createOptions(['STD', 'x30'], cell);
     } else if (field === 'Wafer') {
       createMultiSelectOptions(cell);
+    } else if (field === 'STDF') {
+      createStdfOverlay(cell);
     }
 
     overlay.style.display = 'block';
@@ -324,6 +327,130 @@ document.addEventListener('DOMContentLoaded', function () {
       overlayContent.appendChild(button);
     }
   }
+
+  // Function to create STDF overlay
+  function createStdfOverlay(cell) {
+    const overlayContent = document.getElementById('overlayContent');
+    overlayContent.innerHTML = ''; // Clear previous content
+
+    // Get the wafer numbers from the sibling cell with data-field="Wafer"
+    const waferCell = cell.parentElement.querySelector('td[data-field="Wafer"]');
+    const wafers =
+      waferCell.innerText === 'All'
+        ? Array.from({ length: 25 }, (_, i) => i + 1)
+        : waferCell.innerText
+            .split(', ')
+            .map(Number)
+            .sort((a, b) => a - b);
+
+    // Parse existing file paths if available
+    let existingPaths = {};
+    try {
+      existingPaths = cell.dataset.filePath ? JSON.parse(cell.dataset.filePath) : {};
+    } catch (e) {
+      console.error('Error parsing JSON:', e);
+    }
+
+    // Create table for wafer and STDF directory
+    const div = document.createElement('div');
+    div.classList.add('overlayStdf');
+    const table = document.createElement('table');
+    table.classList.add('table', 'table-bordered', 'table-hover');
+    const thead = document.createElement('thead');
+    thead.classList.add('thead-dark');
+    const headerRow = document.createElement('tr');
+    const waferHeader = document.createElement('th');
+    waferHeader.innerText = 'WAFER';
+    const stdfHeader = document.createElement('th');
+    stdfHeader.innerText = 'STDF Directory';
+    headerRow.appendChild(waferHeader);
+    headerRow.appendChild(stdfHeader);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    wafers.forEach((wafer, index) => {
+      const row = document.createElement('tr');
+      const waferCell = document.createElement('td');
+      waferCell.innerText = wafer;
+      const stdfCell = document.createElement('td');
+      const stdfInput = document.createElement('input');
+      stdfInput.type = 'text';
+      stdfInput.dataset.wafer = wafer;
+      stdfInput.value = existingPaths[wafer] || ''; // Load existing path if available
+      stdfInput.placeholder = 'Enter directory path';
+      stdfInput.addEventListener('input', () => {
+        stdfCell.dataset.filePath = stdfInput.value;
+        const runCell = cell.parentElement.querySelector('td[data-field="Run"] input[type="checkbox"]');
+        if (runCell) {
+          runCell.checked = true;
+        }
+      });
+      stdfCell.appendChild(stdfInput);
+      row.appendChild(waferCell);
+      row.appendChild(stdfCell);
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    div.appendChild(table);
+
+    // Add save button
+    const saveButton = document.createElement('button');
+    saveButton.innerText = 'Save';
+    saveButton.classList.add('btn', 'btn-primary');
+    saveButton.addEventListener('click', () => {
+      const stdfPaths = {};
+      tbody.querySelectorAll('tr').forEach((row) => {
+        const wafer = row.querySelector('td').innerText;
+        const filePath = row.querySelector('td + td input').value;
+        if (filePath.trim() !== '' && wafer.trim() !== '') {
+          stdfPaths[wafer] = filePath.replace(/\/[^\/]+\.stdf$/, '/'); // Save only the directory path
+        }
+      });
+      cell.dataset.filePath = JSON.stringify(stdfPaths);
+      cell.innerText = 'Paths set'; // Update the cell text
+      updateStdfIcon(cell, cell.dataset.filePath); // Use the JSON string as filePath
+      closeOverlay();
+    });
+    div.appendChild(saveButton);
+    overlayContent.appendChild(div);
+  }
+
+  // Handle input event on table cells
+  function handleCellInput(event) {
+    const row = event.target.parentElement;
+    const table = row.parentElement;
+    const isLastRow = row.rowIndex === table.rows.length - 1;
+
+    // Add a new empty row if the last row is filled
+    if (isLastRow && allFieldsFilled(row)) {
+      addEmptyRow(dataFields, table);
+    }
+  }
+
+  // Check if all fields in a row are filled
+  function allFieldsFilled(row) {
+    const cells = row.getElementsByTagName('td');
+    for (let i = 0; i < cells.length; i++) {
+      if (!cells[i].innerText.trim() && !cells[i].querySelector('.checkbox-apple') && !cells[i].querySelector('.stdf-icon')) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Add event listener for cell click to open overlay
+  document.addEventListener('click', function (event) {
+    const target = event.target;
+    if (target.tagName === 'TD' && target.dataset.field) {
+      const field = target.dataset.field;
+      if (field === 'Flow' || field === 'Type' || field === 'Wafer' || field === 'STDF') {
+        openOverlay(field, target);
+      }
+    }
+  });
 
   // Function to close the overlay
   function closeOverlay() {

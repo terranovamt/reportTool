@@ -1,0 +1,37 @@
+{
+    "TITLE": "HSI",
+    "COM": "HSI",
+    "FLOW": "EWS",
+    "TYPE": "x30",
+    "PRODUCT": "Mosquito512K",
+    "CODE": "44E",
+    "LOT": "P6AX86",
+    "WAFER": "1",
+    "CUT": "2.1",
+    "REVISION": "0.1",
+    "STDF": {
+        "1": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+    },
+    "RUN": "1",
+    "AUTHOR": "Matteo Terranova",
+    "MAIL": "matteo.terranova@st.com",
+    "SITE": "Catania",
+    "GROUP": "MDRF - EP - GPAM",
+    "TEST_NUM": [
+        150010000,
+        150011000,
+        150021000,
+        150021001,
+        150021002,
+        150021003,
+        150030000,
+        150041000,
+        150041001,
+        150041002,
+        150041003,
+        150050000,
+        150101000,
+        150111000
+    ],
+    "CSV": "498Z_x30_20240212102618.std"
+}

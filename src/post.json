@@ -14,10 +14,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "P6AX86",
-            "Wafer": "1, 2",
+            "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "1"
+            "STDF": {
+                "1": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+            },
+            "Run": "0"
         },
         {
             "Title": "-",
@@ -30,7 +33,10 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "1"
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
+            "Run": "0"
         },
         {
             "Title": "-",
@@ -43,7 +49,10 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
-            "Run": "1"
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
+            "Run": "0"
         },
         {
             "Title": "HSI",
@@ -56,6 +65,9 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
             "Run": "0"
         },
         {
@@ -69,6 +81,9 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
             "Run": "0"
         },
         {
@@ -82,6 +97,9 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
             "Run": "0"
         },
         {
@@ -95,6 +113,9 @@
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
+            "STDF": {
+                "1": "/path/to/file1/"
+            },
             "Run": "0"
         }
     ]

@@ -39,37 +39,42 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.path = '/html/404.html'
         return super().do_GET()
 
-    def do_POST(self):
-        if self.path == '/submit':
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            if not post_data:
-                self.send_response(400)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
-                self.wfile.write(b'Empty POST data')
-                return
+    try:
+        def do_POST(self):
+            if self.path == '/submit':
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length)
+                if not post_data:
+                    self.send_response(400)
+                    self.send_header('Content-type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write(b'Empty POST data')
+                    return
 
-            data = self.parse_post_data(post_data)
-            
-            # Check if there is at least one item with 'Run' set to '1'
-            if not any(item.get('Run') == "1" for item in data.get('data', [])):
-                self.send_response(400)
+                data = self.parse_post_data(post_data)
+                
+                # Check if there is at least one item with 'Run' set to '1'
+                if not any(item.get('Run') == "1" for item in data.get('data', [])):
+                    self.send_response(400)
+                    self.send_header('Content-type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write(b'Select at least one item with Run set to 1')
+                    return            
+                # Send a successful response
+                self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write(b'Select at least one item with Run set to 1')
-                return            
-            # Send a successful response
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(b'Successfully processed the data')
-            # Process the data
-            self.report_generator(data)
-            
-        else:
-            self.send_response(404)
-            self.end_headers()
+                self.wfile.write(b'Successfully processed the data')
+                # Process the data
+                self.report_generator(data)
+                
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+    except Exception as e:
+        print(f"Error: {e}")
+        
 
     def parse_post_data(self, post_data):
         data_str = post_data.decode('utf-8')

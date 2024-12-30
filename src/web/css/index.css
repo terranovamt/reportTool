@@ -177,16 +177,17 @@ h1 {
 #overlayContent {
   position: absolute;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Create a responsive grid with multiple columns */
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
-  max-height: 80vh; /* Limit the height of the overlay content */
-  min-width: 50%; /* Limit the height of the overlay content */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 80vh;
+  /* min-width: 50%; */
+  max-width: 600px;
+  overflow-y: auto;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: var(--overlay-content-bg);
-  padding: 40px;
+  padding: 35px;
   border-radius: 10px;
   box-shadow: 0 0 10px var(--overlay-content-shadow);
   text-align: center;
@@ -212,8 +213,8 @@ h1 {
 /* Close button styles */
 .close-container {
   position: absolute;
-  top: 1px;
-  right: 7%;
+  top: 0px;
+  right: 3px;
   cursor: pointer;
   width: 30px;
   height: 30px;
@@ -245,4 +246,30 @@ h1 {
 .close-container:hover .rightleft {
   transform: rotate(45deg);
   background-color: var(--highlight-secondary-color);
+}
+
+.stdf-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.overlayStdf {
+  width: 500px;
+  cursor: pointer;
+}
+
+
+.overlayStdf .table input {
+  color: var(--primary-color);
+  /* background-color: var(--primary-color); */
+  border-color: var(--text-color);
+  width: 100%;
+  border-style: none;
+  padding: 10px 5px 10px 10px;
+}
+
+.overlayStdf .table td {
+  padding: 0px;
+  margin: 10px;
 }

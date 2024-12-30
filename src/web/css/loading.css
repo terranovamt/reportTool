@@ -1,0 +1,106 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0);
+  z-index: 10;
+}
+
+.animatebounce {
+  animation: bounce 3s infinite;
+}
+
+.square1 {
+  animation-delay: 0s;
+  --offset1: 0px;
+  --offset2: 15px;
+}
+
+.square2 {
+  animation-delay: 0.1s;
+  --offset1: 25px;
+  --offset2: -5px;
+}
+
+.square3 {
+  animation-delay: 0.15s;
+  --offset1: -5px;
+  --offset2: 15px;
+}
+
+.square4 {
+  animation-delay: 0.2s;
+  --offset1: 15px;
+  --offset2: 20px;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0) rotate(0);
+    animation-timing-function: ease-in;
+  }
+  20% {
+    transform: translateY(calc(-60px - var(--offset1))) rotate(90deg);
+    animation-timing-function: linear;
+  }
+  30% {
+    transform: translateY(0) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  40% {
+    transform: translateY(-15px) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  48% {
+    transform: translateY(0) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  52% {
+    transform: translateY(0) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  60% {
+    transform: translateY(calc(-60px - var(--offset2))) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  80% {
+    transform: translateY(0) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  90% {
+    transform: translateY(-15px) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    transform: translateY(0) rotate(180deg);
+    animation-timing-function: ease-in-out;
+  }
+}
