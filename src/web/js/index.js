@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Collect and validate author data
     let allAuthorFieldsFilled = true;
     authorFields.forEach((field, j) => {
-      const value = authorRow.getElementsByTagName('td')[j].innerText.trim();
+      const cell = authorRow.getElementsByTagName('td')[j];
+      const value = cell ? cell.innerText.trim() : '';
       if (!value) {
         allAuthorFieldsFilled = false;
       }
@@ -72,14 +73,15 @@ document.addEventListener('DOMContentLoaded', function () {
       let allFieldsFilled = true;
 
       dataFields.forEach((field, j) => {
+        const cell = cells[j];
         if (field === 'Run') {
-          const checkbox = cells[j].querySelector('.yep');
-          rowData[field] = checkbox.checked ? '1' : '0';
+          const checkbox = cell.querySelector('.yep');
+          rowData[field] = checkbox && checkbox.checked ? '1' : '0';
         } else if (field === 'STDF') {
-          const filePath = cells[j].dataset.filePath;
+          const filePath = cell ? cell.dataset.filePath : '{}';
           rowData[field] = filePath ? JSON.parse(filePath) : {};
         } else {
-          const value = cells[j].innerText.trim();
+          const value = cell ? cell.innerText.trim() : '';
           if (!value) {
             allFieldsFilled = false;
           }
@@ -104,14 +106,18 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Validate STDF paths
-    for (const rowData of data) {
-      const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer.split(', ').map(Number);
-      const stdfPaths = rowData.STDF;
-      for (const wafer of wafers) {
-        if (!stdfPaths[wafer] || stdfPaths[wafer].trim() === '') {
-          alert(`Please specify a valid STDF path for wafer ${wafer}.`);
-          return;
+    // Validate STDF paths only for rows with 'Run' set to '1'
+    for (let i = 0; i < data.length; i++) {
+      const rowData = data[i];
+      if (rowData.Run === '1') {
+        const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer.split(', ').map(Number);
+        const stdfPaths = rowData.STDF;
+        for (const wafer of wafers) {
+          const stdfPath = stdfPaths[wafer];
+          if (!stdfPath || !stdfPath.path || stdfPath.path.trim() === '' || !stdfPath.corner || stdfPath.corner.trim() === '') {
+            alert(`Please specify a valid STDF path and corner for wafer ${wafer} in row ${i + 1}.`);
+            return;
+          }
         }
       }
     }
@@ -328,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Function to create STDF overlay
   function createStdfOverlay(cell) {
     const overlayContent = document.getElementById('overlayContent');
     overlayContent.innerHTML = ''; // Clear previous content
@@ -351,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Error parsing JSON:', e);
     }
 
-    // Create table for wafer and STDF directory
+    // Create table for wafer, corner, and STDF directory
     const div = document.createElement('div');
     div.classList.add('overlayStdf');
     const table = document.createElement('table');
@@ -361,9 +366,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const headerRow = document.createElement('tr');
     const waferHeader = document.createElement('th');
     waferHeader.innerText = 'WAFER';
+    const cornerHeader = document.createElement('th');
+    cornerHeader.innerText = 'CORNER';
     const stdfHeader = document.createElement('th');
     stdfHeader.innerText = 'STDF Directory';
     headerRow.appendChild(waferHeader);
+    headerRow.appendChild(cornerHeader);
     headerRow.appendChild(stdfHeader);
     thead.appendChild(headerRow);
     table.appendChild(thead);
@@ -374,11 +382,14 @@ document.addEventListener('DOMContentLoaded', function () {
       const row = document.createElement('tr');
       const waferCell = document.createElement('td');
       waferCell.innerText = wafer;
+      const cornerCell = document.createElement('td');
+      cornerCell.innerText = existingPaths[wafer]?.corner || 'TTTT';
+      cornerCell.addEventListener('click', () => openCornerOverlay(cornerCell));
       const stdfCell = document.createElement('td');
       const stdfInput = document.createElement('input');
       stdfInput.type = 'text';
       stdfInput.dataset.wafer = wafer;
-      stdfInput.value = existingPaths[wafer] || ''; // Load existing path if available
+      stdfInput.value = existingPaths[wafer]?.path || ''; // Load existing path if available
       stdfInput.placeholder = 'Enter directory path';
       stdfInput.addEventListener('input', () => {
         stdfCell.dataset.filePath = stdfInput.value;
@@ -389,6 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       stdfCell.appendChild(stdfInput);
       row.appendChild(waferCell);
+      row.appendChild(cornerCell);
       row.appendChild(stdfCell);
       tbody.appendChild(row);
     });
@@ -404,9 +416,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const stdfPaths = {};
       tbody.querySelectorAll('tr').forEach((row) => {
         const wafer = row.querySelector('td').innerText;
-        const filePath = row.querySelector('td + td input').value;
-        if (filePath.trim() !== '' && wafer.trim() !== '') {
-          stdfPaths[wafer] = filePath.replace(/\/[^\/]+\.stdf$/, '/'); // Save only the directory path
+        const corner = row.querySelector('td + td').innerText;
+        const filePath = row.querySelector('td + td + td input').value;
+        if (filePath.trim() !== '' && wafer.trim() !== '' && corner.trim() !== '') {
+          stdfPaths[wafer] = {
+            corner: corner,
+            path: filePath.replace(/\/[^\/]+\.stdf$/, '/'), // Save only the directory path
+          };
         }
       });
       cell.dataset.filePath = JSON.stringify(stdfPaths);
@@ -451,6 +467,44 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   });
+
+  function openCornerOverlay(cell) {
+    const overlay = document.getElementById('secondaryOverlay');
+    const overlayContent = document.getElementById('secondaryOverlayContent');
+    if (!overlayContent) return;
+    overlayContent.innerHTML = '';
+
+    const closeButton = document.createElement('div');
+    closeButton.classList.add('close-container');
+    closeButton.innerHTML = `
+      <div class="leftright"></div>
+      <div class="rightleft"></div>
+    `;
+    closeButton.addEventListener('click', () => closeSecondaryOverlay());
+    overlayContent.appendChild(closeButton);
+
+    const corners = ['TTTT', 'FFTT', 'SSTT', 'FSTT', 'SFTT', 'FFMM', 'SSXX', 'G0G0'];
+    corners.forEach((corner) => {
+      const button = document.createElement('button');
+      button.innerText = corner;
+      button.addEventListener('click', function () {
+        cell.innerText = corner;
+        closeSecondaryOverlay();
+      });
+      overlayContent.appendChild(button);
+    });
+
+    if (overlay) {
+      overlay.style.display = 'block';
+    }
+  }
+
+  function closeSecondaryOverlay() {
+    const overlay = document.getElementById('secondaryOverlay');
+    if (overlay) {
+      overlay.style.display = 'none';
+    }
+  }
 
   // Function to close the overlay
   function closeOverlay() {

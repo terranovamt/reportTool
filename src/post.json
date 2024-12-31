@@ -14,13 +14,20 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "P6AX86",
-            "Wafer": "1",
+            "Wafer": "1, 2",
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                },
+                "2": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_02\\X30"
+                }
             },
-            "Run": "0"
+            "Run": "1"
         },
         {
             "Title": "-",
@@ -34,7 +41,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         },
@@ -50,7 +60,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         },
@@ -66,7 +79,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         },
@@ -82,7 +98,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         },
@@ -98,7 +117,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         },
@@ -114,7 +136,10 @@
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": "/path/to/file1/"
+                "1": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                }
             },
             "Run": "0"
         }

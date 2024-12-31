@@ -160,7 +160,8 @@ h1 {
 }
 
 /* Overlay styles */
-#overlay {
+#overlay,
+#secondaryOverlay {
   position: fixed;
   display: none;
   width: 100%;
@@ -174,7 +175,8 @@ h1 {
   cursor: pointer;
 }
 
-#overlayContent {
+#overlayContent,
+#secondaryOverlayContent{
   position: absolute;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -207,6 +209,23 @@ h1 {
 }
 
 #overlayContent button.selected {
+  background-color: var(--highlight-color);
+}
+
+#secondaryOverlayContent button {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#secondaryOverlayContent button:hover {
+  background-color: var(--secondary-color);
+}
+
+#secondaryOverlayContent button.selected {
   background-color: var(--highlight-color);
 }
 
@@ -259,10 +278,8 @@ h1 {
   cursor: pointer;
 }
 
-
 .overlayStdf .table input {
   color: var(--primary-color);
-  /* background-color: var(--primary-color); */
   border-color: var(--text-color);
   width: 100%;
   border-style: none;
