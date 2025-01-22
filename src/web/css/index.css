@@ -46,7 +46,8 @@ h1 {
   vertical-align: middle;
 }
 
-.table tbody td:focus {
+.table tbody td:focus,
+.overlayStdf .table input:focus {
   outline-color: var(--secondary-color);
 }
 
@@ -161,7 +162,8 @@ h1 {
 
 /* Overlay styles */
 #overlay,
-#secondaryOverlay {
+#secondaryOverlay,
+#infoOverlay {
   position: fixed;
   display: none;
   width: 100%;
@@ -176,7 +178,8 @@ h1 {
 }
 
 #overlayContent,
-#secondaryOverlayContent{
+#secondaryOverlayContent,
+#infoOverlayContent{
   position: absolute;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -284,9 +287,24 @@ h1 {
   width: 100%;
   border-style: none;
   padding: 10px 5px 10px 10px;
+  background-color: transparent;
 }
 
 .overlayStdf .table td {
   padding: 0px;
   margin: 10px;
+}
+
+.overlayStdf .table input:focus {
+  outline-color: var(--secondary-color);
+  outline-width:1px;
+}
+
+img[alt="Informazioni"] {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  cursor: pointer;
 }

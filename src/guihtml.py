@@ -1,12 +1,14 @@
-import http.server
-import socketserver
-import webbrowser
-import threading
 import os
 import json
+import socket
+import threading
+import webbrowser
+import http.server
+import socketserver
 import urllib.parse
 
 PORT = 8000
+MAX_PORT = 8800
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.abspath(os.path.join(BASE_DIR, "web"))
 POST_FILE = os.path.abspath(os.path.join(BASE_DIR, "./post.json"))
@@ -25,7 +27,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif self.path == '/loading':
             self.path = '/html/loading.html'
         elif self.path == '/log':
-            self.path = '/src/run.log'
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            with open('./src/run.log', 'r') as logfile:
+                data = logfile.read()
+                self.wfile.write(data.encode())
+            return
         elif self.path == '/post.json':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -39,8 +47,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.path = '/html/404.html'
         return super().do_GET()
 
-    try:
-        def do_POST(self):
+    def do_POST(self):
+        try:
             if self.path == '/submit':
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
@@ -66,14 +74,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'Successfully processed the data')
                 # Process the data
-                self.report_generator(data)
+                threading.Thread(target=self.report_generator, args=(data,)).start()
                 
             else:
                 self.send_response(404)
                 self.end_headers()
 
-    except Exception as e:
-        print(f"Error: {e}")
+        except Exception as e:
+            print(f"Error: {e}")
         
 
     def parse_post_data(self, post_data):
@@ -106,17 +114,36 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         with open(POST_FILE, 'w') as jsonfile:
             json.dump(data, jsonfile, indent=4)
 
-def start_server():
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        print(f"Serving at port {PORT}")
+    def log_message(self, format, *args):
+        pass  # Override to suppress logging
+
+class ThreadingSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+
+def start_server(port):
+    with ThreadingSimpleServer(("", port), Handler) as httpd:
+        print(f"Serving at port {port}")
         httpd.serve_forever()
+
+def find_available_port(start_port, max_port):
+    port = start_port
+    while port <= max_port:
+        try:
+            start_server(port)
+            break
+        except OSError as e:
+            if e.errno == socket.errno.EADDRINUSE:
+                print(f"Port {port} is already in use. Trying port {port + 2}...")
+                port += 2
+            else:
+                raise
 
 def guihtml():
     if not os.path.isfile(POST_FILE):
         with open(POST_FILE, 'w') as jsonfile:
             json.dump([], jsonfile)
 
-    server_thread = threading.Thread(target=start_server)
+    server_thread = threading.Thread(target=find_available_port, args=(PORT, MAX_PORT))
     server_thread.daemon = True
     server_thread.start()
     

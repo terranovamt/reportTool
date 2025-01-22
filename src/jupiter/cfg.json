@@ -1,16 +1,19 @@
 {
-    "TITLE": "HSI",
-    "COM": "HSI",
+    "TITLE": "PMU",
+    "COM": "PMU",
     "FLOW": "EWS",
-    "TYPE": "x30",
+    "TYPE": "STD",
     "PRODUCT": "Mosquito512K",
     "CODE": "44E",
-    "LOT": "P6AX86",
-    "WAFER": "1",
-    "CUT": "2.1",
+    "LOT": "Q443616",
+    "WAFER": "9",
+    "CUT": "1.1",
     "REVISION": "0.1",
     "STDF": {
-        "1": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+        "9": {
+            "corner": "TTTT",
+            "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
+        }
     },
     "RUN": "1",
     "AUTHOR": "Matteo Terranova",
@@ -18,20 +21,24 @@
     "SITE": "Catania",
     "GROUP": "MDRF - EP - GPAM",
     "TEST_NUM": [
-        150010000,
-        150011000,
-        150021000,
-        150021001,
-        150021002,
-        150021003,
-        150030000,
-        150041000,
-        150041001,
-        150041002,
-        150041003,
-        150050000,
-        150101000,
-        150111000
+        8400,
+        10001000,
+        10001001,
+        10001002,
+        10001003,
+        10003000,
+        10003001,
+        10003002,
+        10003003,
+        10005000,
+        10005001,
+        10005002,
+        10005003,
+        10009000,
+        10010000,
+        10011000,
+        10012000,
+        10013000
     ],
-    "CSV": "498Z_x30_20240212102618.std"
+    "CSV": "r44exxxz_q443616_09_st44ez-t2kf1_e_ews1_tat2k06_20250120185655.std"
 }

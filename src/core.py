@@ -47,15 +47,8 @@ def process_all_wafers(parameter, csv_folder):
     """
     for i in range(1, 25):
         parameter["WAFER"] = i
-        stdf_folders = get_stdf_folder(parameter, i)
         debug and print(stdf_folders, csv_folder)
-        for stdf_folder in stdf_folders:
-            csv_files = stdf2csv([stdf_folder], csv_folder)
-            for csv_file in csv_files: 
-                parameter["TEST_NUM"] = []
-                print(f"|--> WAFER: {parameter['WAFER']}/25")
-                process_composite(parameter, csv_file)
-    
+        process_wafer(parameter, csv_folder, i)
 
 def process_multi_wafers(parameter, csv_folder):
     """
@@ -71,14 +64,8 @@ def process_multi_wafers(parameter, csv_folder):
     wafers = parameter["WAFER"].replace(" ","").split(",")
     for wafer in wafers:
         parameter["WAFER"] = wafer
-        stdf_folders = get_stdf_folder(parameter, wafer)
         debug and print(stdf_folders, csv_folder)
-        for stdf_folder in stdf_folders:
-            csv_files = stdf2csv([stdf_folder], csv_folder)
-            for csv_file in csv_files: 
-                parameter["TEST_NUM"] = []
-                print(f"|--> WAFER: {parameter['WAFER']}")
-                process_composite(parameter, csv_file)
+        process_wafer(parameter, csv_folder, wafer)
 
 
 def process_single_wafer(parameter, csv_folder):
@@ -92,13 +79,28 @@ def process_single_wafer(parameter, csv_folder):
     Returns:
         list: List of CSV files generated.
     """
-    stdf_folders = get_stdf_folder(parameter, parameter["WAFER"])
     debug and print(stdf_folders, csv_folder)
-    for stdf_folder in stdf_folders:
-            csv_files = stdf2csv([stdf_folder], csv_folder)
-            for csv_file in csv_files: 
-                parameter["TEST_NUM"] = []
-                process_composite(parameter, csv_file)
+    process_wafer(parameter, csv_folder, parameter["WAFER"])
+
+def process_wafer(parameter, csv_folder, wafer):
+    """
+    Process a wafer and convert STDF files to CSV.
+
+    Args:
+        parameter (dict): Parameters containing LOT, WAFER, and TYPE.
+        csv_folder (str): Path to the CSV folder.
+        wafer (str or int): Wafer number or identifier.
+
+    Returns:
+        list: List of CSV files generated.
+    """
+    parameter["WAFER"] = wafer
+    stdf_folder = get_stdf_folder(parameter, wafer)
+    debug and print(stdf_folder, csv_folder)
+    csv_files = stdf2csv(stdf_folder, csv_folder, "-t")
+    for csv_file in csv_files: 
+        parameter["TEST_NUM"] = []
+        process_composite(parameter, csv_file, stdf_folder,csv_folder)
 
 
 def get_stdf_folder(parameter, wafer):
@@ -113,7 +115,7 @@ def get_stdf_folder(parameter, wafer):
         str: Constructed STDF folder path.
     """
     try:
-        stdf_path = parameter["STDF"].get(str(wafer))
+        stdf_path = parameter["STDF"].get(str(wafer)).get("path")
         if not stdf_path:
             print(f"Error: No path found for wafer {wafer}")
             return None
@@ -137,35 +139,7 @@ def get_stdf_folder(parameter, wafer):
         return None
 
 
-def get_available_corners(parameter, base_path="STDF"):
-    """
-    Get the list of available STDF folder path corners for a given LOT and WAFER.
-
-    Args:
-        parameter (dict): Parameters containing LOT and WAFER.
-        base_path (str): Base path where STDF folders are located.
-
-    Returns:
-        list: List of STDF folder path + corners.
-    """
-    lot = parameter["LOT"]
-    wafer = str(parameter["WAFER"]).rjust(2, "0")
-    path_corners = []
-
-    lot_path = os.path.join(base_path, lot)
-    if os.path.exists(lot_path):
-        for folder_name in os.listdir(lot_path):
-            parts = folder_name.split("_")
-            if len(parts) == 3 and parts[0] == lot and parts[1] == wafer:
-                path_corners.append(
-                    os.path.abspath(
-                        "STDF/" + parts[0] + "_" + parts[1] + "_" + parts[2]
-                    )
-                )
-    return path_corners
-
-
-def process_composite(parameter, csv_file):
+def process_composite(parameter, csv_file,stdf_folder,csv_folder):
     """
     Process the composite data from a CSV file and execute the report generation.
 
@@ -186,14 +160,14 @@ def process_composite(parameter, csv_file):
             composites = composites[composites != ""]
 
             for composite in composites[1:]:
-                process_single_composite(parameter, tsr, composite, csv_file)
+                process_single_composite(parameter, tsr, composite, csv_file,stdf_folder,csv_folder)
         else:
-            process_single_composite(parameter, tsr, parameter["COM"], csv_file)
+            process_single_composite(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
     except Exception as e:
         print(f"Error processing composite: {e}")
 
 
-def process_single_composite(parameter, tsr, composite, csv_file):
+def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
     """
     Process a single composite and execute the report generation.
 
@@ -212,8 +186,15 @@ def process_single_composite(parameter, tsr, composite, csv_file):
 
     if len(test_numbers) == 0:
         print(f"No tests found for composite: {composite}")
+        uty.write_log(f"No tests found for composite: {composite}",FILENAME)
         return
-
+    test_numbers_str = ', '.join(map(str, test_numbers))
+    uty.write_log(f"STDF2CSV Start converting tests by test list",FILENAME)
+    csv_files = stdf2csv(stdf_folder, csv_folder, f"-l {test_numbers_str}")
+    if len(csv_files) == 0:
+        print(f"No Extaction good : {composite}")
+        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        return
     parameter["COM"] = composite
     parameter["TEST_NUM"] = test_numbers
     parameter["CSV"] = csv_file
@@ -249,7 +230,7 @@ def convert_notebook_to_html(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    uty.write_log("exec START",FILENAME)
+    uty.write_log("Start Juipiter conversion",FILENAME)
     timestartsub = datetime.datetime.now()
     str_output = (
         parameter["TITLE"] + " " + parameter["FLOW"] + "_" + parameter["TYPE"].lower()
@@ -279,7 +260,7 @@ def convert_notebook_to_html(parameter):
     else:
         print(f"ERROR: execution failed {cmd}")
 
-    uty.write_log("exec DONE",FILENAME)
+    uty.write_log("DONE Jupiter conversion",FILENAME)
     
     return timestartsub
 

@@ -19,13 +19,13 @@ def rename_files(folder, old_ext, new_ext):
             renamed_files.append(os.path.join(folder, new_name))
     return renamed_files
 
-def convert_files(folder, hex_file):
+def convert_files(folder, hex_file,option):
     if not os.path.exists(folder):
         print(f"Error: The folder {folder} does not exist.")
         return
     for filename in os.listdir(folder):
         if filename.endswith(".std"):
-            cmd = f'"{hex_file}" "{os.path.join(folder, filename)}"'
+            cmd = f'"{hex_file}" "{os.path.join(folder, filename)}" {option}'
             debug and print(cmd)
             subprocess.run(cmd, shell=True)
 
@@ -41,7 +41,7 @@ def move_csv_files(src_folder, dest_folder):
             shutil.move(
                 os.path.join(src_folder, filename), os.path.join(dest_folder, filename)
             )
-        csv_name = (filename)
+        csv_name = (filename[:-8])
     return csv_name 
 
 def get_folder_size(folder):
@@ -57,27 +57,41 @@ def delete_related_files(csv_folder, std_file_prefix):
     for f in related_files:
         os.remove(os.path.join(csv_folder, f))
 
-def stdf2csv(stdf_folders, csv_folder):
+def stdf2csv(stdf_folders, csv_folder, option = ""):
+
+    # if  os.path.exists(csv_folder):
+    #     shutil.rmtree(csv_folder)
+    
+    if not os.path.exists(csv_folder):
+        os.makedirs(csv_folder)
+
+    csv_name = []
+
     for stdf_folder in stdf_folders:
         rename_files(stdf_folder, ".stdf", ".std")
         
-        std_files = [f for f in os.listdir(stdf_folder) if f.endswith('.std')]
+        # std_files = [f for f in os.listdir(stdf_folder) if f.endswith('.std')]
         
-        existing_csv_files = list(set(f[:-8] for f in os.listdir(csv_folder) if f.endswith('.csv')))
+        # existing_csv_files = list(set(f[:-8] for f in os.listdir(csv_folder) if f.endswith('.csv')))
 
-        if any(f not in existing_csv_files for f in std_files):
-            convert_files(stdf_folder, os.path.abspath("src/STDF2CSV.exe"))
-        csv_name = []
+        # if any(f not in existing_csv_files for f in std_files):
+        #     convert_files(stdf_folder, os.path.abspath("src/STDF2CSV.exe"),option)
+        #     csv_name.append(move_csv_files(stdf_folder, csv_folder))
+        # else:
+        #     csv_name = std_files
+
+        convert_files(stdf_folder, os.path.abspath("src/STDF2CSV.exe"),option)
         csv_name.append(move_csv_files(stdf_folder, csv_folder))
 
-        while get_folder_size(csv_folder) > 1 * 1024 * 1024* 1024:
+        while get_folder_size(csv_folder) > 1 * 1024 * 1024 * 1024:
             files = [(f, os.path.getmtime(os.path.join(csv_folder, f))) for f in os.listdir(csv_folder)]
-            files.sort(key=lambda x: x[1]) 
+            files.sort(key=lambda x: x[1])
 
             if files:
                 oldest_file = files[0][0]
-                std_file_prefix = oldest_file.split('.')[0] 
+                std_file_prefix = oldest_file.split('.')[0]
                 delete_related_files(csv_folder, std_file_prefix)
+
     return csv_name
 
 if __name__ == "__main__":

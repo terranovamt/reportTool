@@ -252,7 +252,7 @@ def rework_stdf(parameter):
 
         # ----------==================================================---------- #
 
-        uty.write_log("   RES SCALE", FILENAME)
+        uty.write_log("Result Scale done", FILENAME)
 
         # ----------==================================================---------- #
         # SPLIT VDD TESTS
@@ -284,7 +284,7 @@ def rework_stdf(parameter):
         # uty.write_log("Rework FTR all test done", FILENAME)
         # ----------==================================================---------- #
 
-        uty.write_log("   SPLIT VDD", FILENAME)
+        uty.write_log("PTR Split VDD done", FILENAME)
 
         # ----------==================================================---------- #
         # Choosing the Chart Type
@@ -324,7 +324,7 @@ def rework_stdf(parameter):
             clearptr = clearptr.drop(["LOT_ID", "TARGET"], axis=1)
             clearptr.fillna({"Volt": "Standard"}, inplace=True)
             ptr_dict[parameter["CSV"]] = clearptr
-            ptrtname = clearptr["TestName"].unique()
+            # ptrtname = clearptr["TestName"].unique()
             # uty.write_log("PTR all done", FILENAME)
         # ----------==================================================---------- #
 
@@ -371,11 +371,15 @@ def rework_stdf(parameter):
         clearftr = pd.concat([test, testvdd])
 
         if not clearftr.empty:
+            clearftr["TEST_TXT"] = (
+                clearftr.pop("TestName").str.upper() + clearftr["TARGET"]
+            )
             clearftr.rename(
                 columns={
                     "TEMPERATURE": "°C",
                     "TEST_NUM": "TestNumber",
                     "CORNER": "Corner",
+                    "TEST_TXT": "TestName",
                 },
                 inplace=True,
             )
@@ -389,7 +393,7 @@ def rework_stdf(parameter):
                 .apply(lambda x: 1 if x == 0 else 0 if x == 1 else "N/A")
             )
             ftr_dict[parameter["CSV"]] = clearftr
-            ftrtname = clearftr["TestName"].unique()
+            # ftrtname = clearftr["TestName"].unique()
             # uty.write_log("FTR all done", FILENAME)
         # ----------==================================================---------- #
 

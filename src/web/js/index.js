@@ -122,10 +122,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    console.log('Data to be submitted:', { authorInfo: authorData, data: data }); // Debug log
-
     // Redirect to loading page immediately after form submission
     window.location.href = '/loading';
+
+    console.log('Data to be submitted:', { authorInfo: authorData, data: data }); // Debug log
 
     // Submit the form data to the server
     fetch('/submit', {
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function () {
     closeButton.addEventListener('click', () => closeSecondaryOverlay());
     overlayContent.appendChild(closeButton);
 
-    const corners = ['TTTT', 'FFTT', 'SSTT', 'FSTT', 'SFTT', 'FFMM', 'SSXX', 'G0G0'];
+    const corners = ['TTTT', 'FFTT', 'F1TT', 'SSTT', 'S1TT', 'FSTT', 'SFTT', 'FFMM', 'SSXX'];
     corners.forEach((corner) => {
       const button = document.createElement('button');
       button.innerText = corner;
@@ -494,8 +494,125 @@ document.addEventListener('DOMContentLoaded', function () {
       overlayContent.appendChild(button);
     });
 
+    // Aggiungi icona informativa
+    const infoIcon = document.createElement('img');
+    infoIcon.src = 'https://www.svgrepo.com/show/533722/circle-information.svg';
+    infoIcon.alt = 'Informazioni';
+    infoIcon.style.cursor = 'pointer';
+    infoIcon.addEventListener('click', () => openInfoOverlay());
+    overlayContent.appendChild(infoIcon);
+
     if (overlay) {
       overlay.style.display = 'block';
+    }
+  }
+
+  function openInfoOverlay() {
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoOverlayContent = document.getElementById('infoOverlayContent');
+    if (!infoOverlayContent) return;
+    infoOverlayContent.innerHTML = '';
+
+    const closeButton = document.createElement('div');
+    closeButton.classList.add('close-container');
+    closeButton.innerHTML = `
+      <div class="leftright"></div>
+      <div class="rightleft"></div>
+    `;
+    closeButton.addEventListener('click', () => closeInfoOverlay());
+    infoOverlayContent.appendChild(closeButton);
+
+    // Aggiungi il tuo testo HTML completo qui
+    const infoText = document.createElement('div');
+    infoText.innerHTML = `
+      <!-- Inserisci qui il tuo testo HTML completo -->
+      <div><table class="table table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Corner Type</th>
+          <th>NMOS</th>
+          <th>PMOS</th>
+          <th>Resistors</th>
+          <th>Capacitance</th>
+        </tr>
+      </thead>
+  <tr>
+    <td>TTTT (STD)</td>
+    <td>STD</td>
+    <td>STD</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>FFTT</td>
+    <td>FAST</td>
+    <td>FAST</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>F1TT (MidFast)</td>
+    <td>midF</td>
+    <td>midF</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>SSTT</td>
+    <td>SLOW</td>
+    <td>SLOW</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>S1TT (MidSlow)</td>
+    <td>midS</td>
+    <td>midS</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>FSTT (N-Fast / P-Slow)</td>
+    <td>FAST</td>
+    <td>SLOW</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>SFTT (N-Slow / P-Fast)</td>
+    <td>SLOW</td>
+    <td>FAST</td>
+    <td>STD</td>
+    <td>STD</td>
+  </tr>
+  <tr>
+    <td>FFMM (RCmin)</td>
+    <td>FAST</td>
+    <td>FAST</td>
+    <td>Rmin</td>
+    <td>Cmin</td>
+  </tr>
+  <tr>
+    <td>SSXX (RCmax)</td>
+    <td>SLOW</td>
+    <td>SLOW</td>
+    <td>Rmax</td>
+    <td>Cmax</td>
+  </tr>
+</table>
+</div>
+    `;
+    infoOverlayContent.appendChild(infoText);
+
+    if (infoOverlay) {
+      infoOverlay.style.display = 'block';
+    }
+  }
+
+  function closeInfoOverlay() {
+    const infoOverlay = document.getElementById('infoOverlay');
+    if (infoOverlay) {
+      infoOverlay.style.display = 'none';
     }
   }
 

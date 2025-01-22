@@ -4,7 +4,7 @@ def read_csv_with_fallback(path):
     import os
 
     try:
-        print (os.path.abspath(path))
+        # print (os.path.abspath(path))
         return pd.read_csv(os.path.abspath(path))
     except (EmptyDataError, FileNotFoundError, ParserError) as e:
         print("ERROR:", e)
@@ -84,14 +84,12 @@ def find_value(value, calc_type):
             return value - (value * 0.1)
 
 
-def write_log(message, filename = "../run.log"):
+def write_log(message, filename="../run.log"):
     import os
     import datetime
 
     now = datetime.datetime.now()
     timestamp = now.strftime("[%Y-%m-%d %H:%M:%S]")
-    diff = ""
-    # diff = " (+{}) |--> ".format(str(time_diff).split(".")[0])
 
     try:
         with open(filename, "r+") as file:
@@ -99,8 +97,18 @@ def write_log(message, filename = "../run.log"):
             # Limit the content to the last 999 lines
             if len(content) >= 1000:
                 content = content[:999]
+
+            # Calculate time difference if there is a previous log entry
+            if content:
+                last_timestamp_str = content[0].split("] ")[0].strip("[ ]")
+                last_timestamp = datetime.datetime.strptime(last_timestamp_str, "%Y-%m-%d %H:%M:%S")
+                time_diff = now - last_timestamp
+                diff_str = " (+{})".format(str(time_diff).split(".")[0])
+            else:
+                diff_str = ""
+
             # Insert the new log entry at the beginning
-            content.insert(0, timestamp + " |--> " + message + "\n")
+            content.insert(0, timestamp + diff_str + " |--> " + message + "\n")
             # Write back the content to the file
             file.seek(0)
             file.writelines(content)

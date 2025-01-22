@@ -7,27 +7,23 @@
     },
     "data": [
         {
-            "Title": "HSI",
-            "COM": "HSI",
+            "Title": "PMU",
+            "COM": "PMU",
             "Flow": "EWS",
-            "Type": "x30",
+            "Type": "STD",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1, 2",
-            "Cut": "2.1",
+            "LOT": "Q443616",
+            "Wafer": "9",
+            "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "9": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
-                },
-                "2": {
-                    "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_02\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
                 }
             },
-            "Run": "1"
+            "Run": "0"
         },
         {
             "Title": "-",
@@ -36,7 +32,7 @@
             "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
+            "LOT": "Q443616",
             "Wafer": "1",
             "Cut": "2.1",
             "Revision": "0.1",
@@ -55,14 +51,14 @@
             "Type": "STD",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1",
+            "LOT": "Q443616",
+            "Wafer": "9",
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "9": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
                 }
             },
             "Run": "0"
@@ -71,17 +67,17 @@
             "Title": "HSI",
             "COM": "HSI",
             "Flow": "EWS",
-            "Type": "x30",
+            "Type": "STD",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1",
+            "LOT": "Q443616",
+            "Wafer": "9",
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "9": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
                 }
             },
             "Run": "0"
