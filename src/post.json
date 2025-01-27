@@ -7,20 +7,20 @@
     },
     "data": [
         {
-            "Title": "PMU",
+            "Title": "Power Managment Unit",
             "COM": "PMU",
             "Flow": "EWS",
-            "Type": "STD",
+            "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "9",
+            "Wafer": "12",
             "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "9": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
@@ -64,77 +64,115 @@
             "Run": "0"
         },
         {
-            "Title": "HSI",
+            "Title": "HSI 144MHz",
             "COM": "HSI",
             "Flow": "EWS",
-            "Type": "STD",
+            "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "9",
-            "Cut": "2.1",
+            "Wafer": "12",
+            "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "9": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
         },
         {
-            "Title": "RB",
+            "Title": "Reset Block",
             "COM": "RB",
             "Flow": "EWS",
             "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1",
+            "LOT": "Q443616",
+            "Wafer": "12",
             "Cut": "2.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
         },
         {
-            "Title": "Real time clock",
-            "COM": "RTC",
+            "Title": "SCAN Transition",
+            "COM": "TF",
             "Flow": "EWS",
-            "Type": "STD",
+            "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1",
-            "Cut": "2.1",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
         },
         {
-            "Title": "SCAN",
-            "COM": "scan",
+            "Title": "SCAN Stack At",
+            "COM": "SAF",
             "Flow": "EWS",
-            "Type": "STD",
+            "Type": "x30",
             "Product": "Mosquito512K",
             "Code": "44E",
-            "LOT": "P6AX86",
-            "Wafer": "1",
-            "Cut": "2.1",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "Memory BIST",
+            "COM": "MBIST",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "Random Number Generator",
+            "COM": "RNG",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443626",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"

@@ -160,6 +160,7 @@ def process_composite(parameter, csv_file,stdf_folder,csv_folder):
             composites = composites[composites != ""]
 
             for composite in composites[1:]:
+                parameter["TITLE"] = composite.upper()
                 process_single_composite(parameter, tsr, composite, csv_file,stdf_folder,csv_folder)
         else:
             process_single_composite(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
@@ -198,7 +199,6 @@ def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,cs
     parameter["COM"] = composite
     parameter["TEST_NUM"] = test_numbers
     parameter["CSV"] = csv_file
-    parameter["TITLE"] = composite.upper()
 
     debug and print(parameter)
     exec(parameter)

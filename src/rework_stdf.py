@@ -187,68 +187,45 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # START CLEANING PARAMETRIC TEST RECORD
     if not tmpptr.empty:
+
         # ----------==================================================---------- #
         # Rework RESULT SCALE
         if not tmpptr.empty:
-            if composite == "LSI" and str(parameter["TYPE"]).upper() != "X30":
-                tmpptr.loc[tmpptr["UNITS"] == "MHz", "RES_SCAL"] = -6
-                tmpptr.loc[:, "RESULT"] = tmpptr["RESULT"].where(
-                    tmpptr["UNITS"] != "MHz", tmpptr["RESULT"] * (10**9)
-                )
-                tmpptr.loc[:, "HI_LIMIT"] = tmpptr["HI_LIMIT"].where(
-                    tmpptr["UNITS"] != "MHz", tmpptr["HI_LIMIT"] * (10**9)
-                )
-                tmpptr.loc[:, "LO_LIMIT"] = tmpptr["LO_LIMIT"].where(
-                    tmpptr["UNITS"] != "MHz", tmpptr["LO_LIMIT"] * (10**9)
-                )
-                tmpptr.loc[tmpptr["UNITS"] == "MHz", "UNITS"] = "Hz"
-                tmpptr = tmpptr.drop(
-                    tmpptr[(tmpptr["X_COORD"] == 81) & (tmpptr["Y_COORD"] == 78)].index
-                )
 
             debug and uty.write_log("      A", FILENAME)
 
             tmpptr["RES_SCAL"] = tmpptr.groupby("TEST_TXT")["RES_SCAL"].transform("max")
-            tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"] = "m" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 3, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"] = "u" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 6, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"] = "n" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 9, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"] = "p" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 12, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"] = "f" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 15, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"] = "a" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == 18, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"] = "K" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == -3, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"] = "M" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == -6, "UNITS"
-            ].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = "G" + tmpptr.loc[
-                tmpptr["RES_SCAL"] == -9, "UNITS"
-            ].astype(str)
+    
+            # Cast to string before concatenation
+            tmpptr["UNITS"] = tmpptr["UNITS"].astype(str)
+            tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"] = "m" + tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"] = "u" + tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"] = "n" + tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"] = "p" + tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"] = "f" + tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"] = "a" + tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"] = "K" + tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"] = "M" + tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"]
+            tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = "G" + tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"]
 
             debug and uty.write_log("      B", FILENAME)
+
+            tmpptr["RESULT"] = tmpptr["RESULT"].astype(float)
+            tmpptr["HI_LIMIT"] = tmpptr["HI_LIMIT"].astype(float)
+            tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)
+            
+            # Ensure the results are cast to float
             tmpptr.loc[:, "RESULT"] = round(
                 tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
-            )
+            ).astype(float)
             tmpptr.loc[:, "HI_LIMIT"] = round(
                 tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
                 3,
-            )
+            ).astype(float)
             tmpptr.loc[:, "LO_LIMIT"] = round(
                 tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
                 3,
-            )
+            ).astype(float)
 
         # ----------==================================================---------- #
 
@@ -372,7 +349,7 @@ def rework_stdf(parameter):
 
         if not clearftr.empty:
             clearftr["TEST_TXT"] = (
-                clearftr.pop("TestName").str.upper() + clearftr["TARGET"]
+                clearftr.pop("TestName").str.upper()
             )
             clearftr.rename(
                 columns={

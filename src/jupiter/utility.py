@@ -7,7 +7,7 @@ def read_csv_with_fallback(path):
         # print (os.path.abspath(path))
         return pd.read_csv(os.path.abspath(path))
     except (EmptyDataError, FileNotFoundError, ParserError) as e:
-        print("ERROR:", e)
+        # print("ERROR:", e)
         return pd.DataFrame()
 
 
