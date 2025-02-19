@@ -72,17 +72,22 @@ def rework_stdf(parameter):
     test_nums = parameter["TEST_NUM"] if isinstance(parameter["TEST_NUM"], list) else [parameter["TEST_NUM"]]
     
     # PTR Parametric Test Record
-    tmpptr = pd.read_csv(
-        os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv"),
-        usecols=[0, 1, 3, 6, 7, 10, 13, 14, 15],
-    )
-    tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
-    uty.write_log("    READ PTR", FILENAME)
+    ptr_path = os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv")
+    if os.path.exists(ptr_path):
+        tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 3, 6, 7, 10, 13, 14, 15])
+        tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
+        uty.write_log("    READ PTR", FILENAME)
+    else :
+        tmpptr = pd.DataFrame()
 
     # FTR Functional Test Record
-    tmpftr = pd.read_csv(f"./src/csv/{parameter['CSV']}.ftr.csv", usecols=[0, 1, 4, 23])
-    tmpftr = tmpftr[tmpftr["TEST_NUM"].isin(test_nums)]
-    uty.write_log("    READ FTR", FILENAME)
+    ftr_path = f"./src/csv/{parameter['CSV']}.ftr.csv"
+    if os.path.exists(ftr_path):
+        tmpftr = pd.read_csv(ftr_path, usecols=[0, 1, 4, 23])
+        tmpftr = tmpftr[tmpftr["TEST_NUM"].isin(test_nums)]
+        uty.write_log("    READ FTR", FILENAME)
+    else :
+        tmpftr = pd.DataFrame()
 
     # MIR Master Information Record
     mir = pd.read_csv(f"./src/csv/{parameter['CSV']}.mir.csv")
@@ -128,17 +133,18 @@ def rework_stdf(parameter):
     if str(parameter["TYPE"]).upper() != "X30":
         prr = prr.drop_duplicates(subset=["X_COORD", "Y_COORD"], keep="last")
         # ----------==================================================---------- #
-
-        tmpptr = tmpptr.merge(
-            prr[["PartID", "X_COORD", "Y_COORD", "SOFT_BIN", "HARD_BIN"]],
-            how="inner",
-            on="PartID",
-        )
-        tmpftr = tmpftr.merge(
-            prr[["PartID", "X_COORD", "Y_COORD"]],
-            how="inner",
-            on="PartID",
-        )
+        if not tmpptr.empty:
+            tmpptr = tmpptr.merge(
+                prr[["PartID", "X_COORD", "Y_COORD", "SOFT_BIN", "HARD_BIN"]],
+                how="inner",
+                on="PartID",
+            )
+        if not tmpftr.empty:
+            tmpftr = tmpftr.merge(
+                prr[["PartID", "X_COORD", "Y_COORD"]],
+                how="inner",
+                on="PartID",
+            )
         # ----------==================================================---------- #
         # Print retest
         # print(corner,str(mir.SBLOT_ID[0]),str(int(
@@ -148,14 +154,16 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # Remove ususefull Test
     # ----------==================================================---------- #
-    tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.startswith(("R_", "log"))]
-    tmpptr = tmpptr[
-        ~tmpptr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
-    ]
-    tmpftr = tmpftr[~tmpftr["TEST_TXT"].str.startswith(("R_", "log"))]
-    tmpftr = tmpftr[
-        ~tmpftr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
-    ]
+    if not tmpptr.empty:
+        tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.startswith(("R_", "log"))]
+        tmpptr = tmpptr[
+            ~tmpptr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
+        ]
+    if not tmpftr.empty:
+        tmpftr = tmpftr[~tmpftr["TEST_TXT"].str.startswith(("R_", "log"))]
+        tmpftr = tmpftr[
+            ~tmpftr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
+        ]
 
     # ----------==================================================---------- #
     # FIX ERROR
