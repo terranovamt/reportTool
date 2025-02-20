@@ -190,7 +190,7 @@ def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,cs
         uty.write_log(f"No tests found for composite: {composite}",FILENAME)
         return
     test_numbers_str = ', '.join(map(str, test_numbers))
-    uty.write_log(f"STDF2CSV Start converting tests by test list",FILENAME)
+    uty.write_log(f"Converting tests by test list",FILENAME)
     csv_files = stdf2csv(stdf_folder, csv_folder, f"-l {test_numbers_str}")
     if len(csv_files) == 0:
         print(f"No Extaction good : {composite}")
@@ -321,7 +321,7 @@ def rework_report(parameter):
         os.remove(report_path + ".bak")
         import webbrowser
         # print(report_path)
-        # webbrowser.open(f"file:/{report_path}")
+        webbrowser.open(f"file:/{report_path}")
     except Exception as e:
         print(f"ERROR: {report_path}.bak not deleted: {e}")
 

@@ -1,14 +1,14 @@
 {
     "authorInfo": {
-        "Author": "Domenico Milazzo",
-        "Mail": "domenico.milazzo@st.com",
+        "Author": "Matteo Terranova",
+        "Mail": "matteo.terranova@st.com",
         "Site": "Catania",
         "Group": "MDRF - EP - GPAM"
     },
     "data": [
         {
             "Title": "Crack Detector",
-            "COM": "CKRD",
+            "COM": "CRKD",
             "Flow": "EWS",
             "Type": "x30",
             "Product": "Mosquito512K",
@@ -21,63 +21,6 @@
                 "12": {
                     "corner": "TTTT",
                     "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
-                }
-            },
-            "Run": "0"
-        },
-        {
-            "Title": "-",
-            "COM": "all",
-            "Flow": "EWS",
-            "Type": "x30",
-            "Product": "Mosquito512K",
-            "Code": "44E",
-            "LOT": "Q443616",
-            "Wafer": "1",
-            "Cut": "2.1",
-            "Revision": "0.1",
-            "STDF": {
-                "1": {
-                    "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\P6AX86\\P6AX86_01\\X30"
-                }
-            },
-            "Run": "0"
-        },
-        {
-            "Title": "-",
-            "COM": "all",
-            "Flow": "EWS",
-            "Type": "STD",
-            "Product": "Mosquito512K",
-            "Code": "44E",
-            "LOT": "Q443616",
-            "Wafer": "9",
-            "Cut": "2.1",
-            "Revision": "0.1",
-            "STDF": {
-                "9": {
-                    "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO"
-                }
-            },
-            "Run": "0"
-        },
-        {
-            "Title": "Crack Detector",
-            "COM": "CKRD",
-            "Flow": "EWS",
-            "Type": "STD",
-            "Product": "Mosquito512K",
-            "Code": "44E",
-            "LOT": "Q443616",
-            "Wafer": "11",
-            "Cut": "1.1",
-            "Revision": "0.1",
-            "STDF": {
-                "11": {
-                    "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\11"
                 }
             },
             "Run": "0"
@@ -178,8 +121,122 @@
             "Run": "0"
         },
         {
-            "Title": "OS_init",
-            "COM": "OS_init",
+            "Title": "HSI 144MHz",
+            "COM": "HSI",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "Power Managment Unit",
+            "COM": "PMU",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "Process Monitoring Block",
+            "COM": "PMB",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "IO Compensation",
+            "COM": "IOCOMP",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "MAX Frequency",
+            "COM": "FMAX",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "SCAN IDDQ",
+            "COM": "IDDQ",
+            "Flow": "EWS",
+            "Type": "x30",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "12",
+            "Cut": "1.1",
+            "Revision": "0.1",
+            "STDF": {
+                "12": {
+                    "corner": "TTTT",
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                }
+            },
+            "Run": "0"
+        },
+        {
+            "Title": "HSI 144MHz",
+            "COM": "HSI",
             "Flow": "EWS",
             "Type": "STD",
             "Product": "Mosquito512K",
@@ -191,29 +248,29 @@
             "STDF": {
                 "9": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\nicolo scudiscio\\OneDrive - STMicroelectronics\\44E Mosquito\\STDF\\EWS1\\A MANO\\09"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\09"
                 }
             },
-            "Run": "0"
+            "Run": "1"
         },
         {
-            "Title": "Last Analogue",
-            "COM": "last_analog",
-            "Flow": "FT",
-            "Type": "x30",
-            "Product": "Cobra512K",
-            "Code": "455",
-            "LOT": "FT",
-            "Wafer": "1",
+            "Title": "Power Managment Unit",
+            "COM": "PMU",
+            "Flow": "EWS",
+            "Type": "STD",
+            "Product": "Mosquito512K",
+            "Code": "44E",
+            "LOT": "Q443616",
+            "Wafer": "9",
             "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "1": {
+                "9": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\Add-On\\under dev\\reportTool\\STDF\\COBRA"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\09"
                 }
             },
-            "Run": "0"
+            "Run": "1"
         }
     ]
 }

@@ -1,12 +1,14 @@
 import os
 import shutil
 import subprocess
+import jupiter.utility as uty
 import json
 import datetime
-
 debug = False
+FILENAME = os.path.abspath("src/run.log")
 
 def rename_files(folder, old_ext, new_ext):
+    uty.write_log(f"Rename .csv",FILENAME)
     if not os.path.exists(folder):
         print(f"Error: The folder {folder} does not exist.")
         return []
@@ -20,6 +22,7 @@ def rename_files(folder, old_ext, new_ext):
     return renamed_files
 
 def convert_files(folder, hex_file,option):
+    uty.write_log(f"Extract .csv",FILENAME)
     if not os.path.exists(folder):
         print(f"Error: The folder {folder} does not exist.")
         return
@@ -30,6 +33,7 @@ def convert_files(folder, hex_file,option):
             subprocess.run(cmd, shell=True)
 
 def move_csv_files(src_folder, dest_folder):
+    uty.write_log(f"Move .csv",FILENAME)
     if not os.path.exists(src_folder):
         print(f"Error: The source folder {src_folder} does not exist.")
         return []
@@ -53,6 +57,7 @@ def get_folder_size(folder):
     return total_size
 
 def delete_related_files(csv_folder, std_file_prefix):
+    uty.write_log(f"MAX CAHCHE remove old .csv",FILENAME)
     related_files = [f for f in os.listdir(csv_folder) if f.startswith(std_file_prefix)]
     for f in related_files:
         os.remove(os.path.join(csv_folder, f))

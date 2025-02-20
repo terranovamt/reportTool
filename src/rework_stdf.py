@@ -74,18 +74,18 @@ def rework_stdf(parameter):
     # PTR Parametric Test Record
     ptr_path = os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv")
     if os.path.exists(ptr_path):
+        uty.write_log("Read PTR", FILENAME)
         tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 3, 6, 7, 10, 13, 14, 15])
         tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
-        uty.write_log("    READ PTR", FILENAME)
     else :
         tmpptr = pd.DataFrame()
 
     # FTR Functional Test Record
     ftr_path = f"./src/csv/{parameter['CSV']}.ftr.csv"
     if os.path.exists(ftr_path):
+        uty.write_log("Read FTR", FILENAME)
         tmpftr = pd.read_csv(ftr_path, usecols=[0, 1, 4, 23])
         tmpftr = tmpftr[tmpftr["TEST_NUM"].isin(test_nums)]
-        uty.write_log("    READ FTR", FILENAME)
     else :
         tmpftr = pd.DataFrame()
 
@@ -101,7 +101,7 @@ def rework_stdf(parameter):
     sbr = pd.read_csv(f"./src/csv/{parameter['CSV']}.sbr.csv")
 
     # ----------==================================================---------- #
-    uty.write_log("   Read STDF", FILENAME)
+    uty.write_log("Extract general inforamtion", FILENAME)
     # ----------==================================================---------- #
     # round to nearest 5 temperature
     # ----------==================================================---------- #
@@ -154,29 +154,29 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # Remove ususefull Test
     # ----------==================================================---------- #
-    if not tmpptr.empty:
-        tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.startswith(("R_", "log"))]
-        tmpptr = tmpptr[
-            ~tmpptr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
-        ]
-    if not tmpftr.empty:
-        tmpftr = tmpftr[~tmpftr["TEST_TXT"].str.startswith(("R_", "log"))]
-        tmpftr = tmpftr[
-            ~tmpftr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
-        ]
+    # if not tmpptr.empty:
+    #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.startswith(("R_", "log"))]
+    #     tmpptr = tmpptr[
+    #         ~tmpptr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
+    #     ]
+    # if not tmpftr.empty:
+    #     tmpftr = tmpftr[~tmpftr["TEST_TXT"].str.startswith(("R_", "log"))]
+    #     tmpftr = tmpftr[
+    #         ~tmpftr["TEST_TXT"].str.contains("OTPWord|TestTime|XId|YId|WaferId")
+    #     ]
 
     # ----------==================================================---------- #
     # FIX ERROR
     # ----------==================================================---------- #
-    if composite == "scan":
-        tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("Stress")]
-    if composite == "RB":
-        tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("diff", case=False)]
-    if composite == "RNG":
-        tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("div", case=False)]
-    if composite == "Register_Test":
-        tmpptr.loc[tmpptr["TEST_NUM"] == 90020000, "HI_LIMIT"] = 1.5
-        tmpptr.loc[tmpptr["TEST_NUM"] == 90020000, "LO_LIMIT"] = 0.5
+    # if composite == "scan":
+    #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("Stress")]
+    # if composite == "RB":
+    #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("diff", case=False)]
+    # if composite == "RNG":
+    #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("div", case=False)]
+    # if composite == "Register_Test":
+    #     tmpptr.loc[tmpptr["TEST_NUM"] == 90020000, "HI_LIMIT"] = 1.5
+    #     tmpptr.loc[tmpptr["TEST_NUM"] == 90020000, "LO_LIMIT"] = 0.5
 
     # ----------==================================================---------- #
     uty.write_log("   Cleaning", FILENAME)
@@ -382,7 +382,7 @@ def rework_stdf(parameter):
             # uty.write_log("FTR all done", FILENAME)
         # ----------==================================================---------- #
 
-    uty.write_log("END FTR", FILENAME)
+    uty.write_log("Write csv for jupiter", FILENAME)
 
     if len(ptr_dict) != 0:
         ptr = pd.concat(ptr_dict.values(), ignore_index=True)
@@ -397,7 +397,7 @@ def rework_stdf(parameter):
     ptr.to_csv(os.path.abspath("./src/tmp/ptr.csv"), index=False)
     ftr.to_csv(os.path.abspath("./src/tmp/ftr.csv"), index=False)
 
-    uty.write_log("Rework STDF DONE", FILENAME)
+    # uty.write_log("Rework STDF DONE", FILENAME)
 
 def main():
 
