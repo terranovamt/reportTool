@@ -4,7 +4,7 @@ import datetime
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "jupiter"))
-import utility as uty
+import jupiter.utility as uty
 
 sys.path.pop()
 
@@ -372,11 +372,17 @@ def rework_stdf(parameter):
             clearftr.fillna({"Volt": "Standard"}, inplace=True)
             # Create Result (1 = test PASS) (0 = test FAIL)
             # That's because we print the passes, so we just have to count
-            clearftr["RESULT"] = (
-                clearftr["TEST_FLG"]
-                .apply(lambda x: int(str(x)[-8]) if len(str(x)) >= 8 else 0)
-                .apply(lambda x: 1 if x == 0 else 0 if x == 1 else "N/A")
+            clearftr["TEST_FLG"] = clearftr["TEST_FLG"].apply(lambda x: int(str(x), 2))
+            clearftr["RESULT"] = clearftr["TEST_FLG"].apply(
+                lambda x: 1 if x == 0 else 0 if x == 128 else None
             )
+            clearftr = clearftr.dropna(subset=["RESULT"])
+            # clearftr["RESULT"] = clearftr["RESULT"].apply(lambda x: 1 if x == 0 else 0)
+            # clearftr["RESULT"] = (
+            #     clearftr["TEST_FLG"]
+            #     .apply(lambda x: int(str(x)[-8]) if len(str(x)) >= 8 else 0)
+            #     .apply(lambda x: 1 if x == 0 else 0 if x == 1 else "N/A")
+            # )
             ftr_dict[parameter["CSV"]] = clearftr
             # ftrtname = clearftr["TestName"].unique()
             # uty.write_log("FTR all done", FILENAME)

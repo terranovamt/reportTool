@@ -20,7 +20,7 @@
             "STDF": {
                 "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
@@ -39,7 +39,7 @@
             "STDF": {
                 "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
@@ -58,7 +58,7 @@
             "STDF": {
                 "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\x30"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\x30"
                 }
             },
             "Run": "0"
@@ -242,13 +242,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "9",
+            "Wafer": "12",
             "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "9": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\09"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\12"
                 }
             },
             "Run": "1"
@@ -261,13 +261,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "9",
+            "Wafer": "12",
             "Cut": "1.1",
             "Revision": "0.1",
             "STDF": {
-                "9": {
+                "12": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\09"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\Project\\44E Mosquito\\STDF\\EWS1\\A MANO\\12"
                 }
             },
             "Run": "1"
