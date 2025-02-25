@@ -179,7 +179,7 @@ def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,cs
         csv_file (str): CSV file name to process.
     """
     match_group = tsr["TEST_NAM"].str.extract(
-        r"(.*_{0}_.*:.*|.*_{0}_..$)".format(composite)
+        r"(.*_{0}_.*:.*|.*_{0}_..$|.*_{0}_.*_DELTA_.*)".format(composite)
     )
     tsr["match_group"] = match_group[0]
 

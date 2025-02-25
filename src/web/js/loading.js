@@ -81,7 +81,8 @@ function updateElapsedTime(logTime) {
   const hours = Math.floor((elapsed / (1000 * 60 * 60)) % 24);
   const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
 
-  const elapsedTimeString = `( +${days}d ${hours}h ${minutes}m ${seconds}s)`;
+  // const elapsedTimeString = `(+${days}d ${hours}h ${minutes}m ${seconds}s)`;
+  const elapsedTimeString = `(+${hours}h ${minutes}m ${seconds}s)`;
   return elapsedTimeString;
 
   // update();

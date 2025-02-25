@@ -13,7 +13,10 @@ def read_csv_with_fallback(path):
 
 # Customize cell colors
 def color_cpk(val):
-    val = float(val)
+    try:
+        val = float(val)
+    except ValueError:
+        return ""
     if isinstance(val, (int, float)):
         if val < 1.2:
             return "background-color: #F23202"
@@ -30,7 +33,10 @@ def color_cpk(val):
     return ""
 
 def color_kurtosis(val):
-    val = float(val)
+    try:
+        val = float(val)
+    except ValueError:
+        return ""
     if isinstance(val, (int, float)):
         if val > -0.2:
             return "background-color: #F23202"
@@ -49,7 +55,10 @@ def color_kurtosis(val):
 
 # Customize cell colors
 def color_cp(val):
-    val = float(val)
+    try:
+        val = float(val)
+    except ValueError:
+        return ""
     if isinstance(val, (int, float)):
         if val < 6:
             return "background-color: #F23202"

@@ -75,7 +75,7 @@ def rework_stdf(parameter):
     ptr_path = os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv")
     if os.path.exists(ptr_path):
         uty.write_log("Read PTR", FILENAME)
-        tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 3, 6, 7, 10, 13, 14, 15])
+        tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 6, 7, 10, 11, 12, 13, 14, 15])
         tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
     else :
         tmpptr = pd.DataFrame()
@@ -168,6 +168,8 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # FIX ERROR
     # ----------==================================================---------- #
+    
+    
     # if composite == "scan":
     #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("Stress")]
     # if composite == "RB":
@@ -202,7 +204,7 @@ def rework_stdf(parameter):
 
             debug and uty.write_log("      A", FILENAME)
 
-            tmpptr["RES_SCAL"] = tmpptr.groupby("TEST_TXT")["RES_SCAL"].transform("max")
+            # tmpptr["RES_SCAL"] = tmpptr.groupby("TEST_TXT")["RES_SCAL"].transform("min")
     
             # Cast to string before concatenation
             tmpptr["UNITS"] = tmpptr["UNITS"].astype(str)
@@ -215,21 +217,19 @@ def rework_stdf(parameter):
             tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"] = "K" + tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"]
             tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"] = "M" + tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"]
             tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = "G" + tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"]
-
-            debug and uty.write_log("      B", FILENAME)
-
-            tmpptr["RESULT"] = tmpptr["RESULT"].astype(float)
-            tmpptr["HI_LIMIT"] = tmpptr["HI_LIMIT"].astype(float)
-            tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)
             
-            # Ensure the results are cast to float
+            tmpptr["RESULT"] = tmpptr["RESULT"].astype(float)
             tmpptr.loc[:, "RESULT"] = round(
                 tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
             ).astype(float)
+            
+            tmpptr["HI_LIMIT"] = tmpptr["HI_LIMIT"].astype(float)
             tmpptr.loc[:, "HI_LIMIT"] = round(
                 tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
                 3,
             ).astype(float)
+            
+            tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)            
             tmpptr.loc[:, "LO_LIMIT"] = round(
                 tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
                 3,
@@ -275,8 +275,8 @@ def rework_stdf(parameter):
         # Choosing the Chart Type
         clearptr = pd.concat([test, testvdd])
 
-        regex = "(.*(:.*))|(.*)"
         if not clearptr.empty:
+            regex = "(.*(:.*|DELTA.*))|(.*)"
             clearptr[["tmp", "TARGET", "FTYPE"]] = clearptr["TARGET"].str.extract(
                 regex, expand=True
             )
@@ -399,6 +399,9 @@ def rework_stdf(parameter):
         pass
     else:
         os.makedirs("./src/tmp", exist_ok=True)
+
+    ptr.drop(["TestNumber", "RES_SCAL", "LLM_SCAL", "HLM_SCAL", "FTYPE"], axis="columns", inplace=True, errors='ignore')
+    ftr.drop(["TestNumber"], axis="columns", inplace=True, errors='ignore')
 
     ptr.to_csv(os.path.abspath("./src/tmp/ptr.csv"), index=False)
     ftr.to_csv(os.path.abspath("./src/tmp/ftr.csv"), index=False)
