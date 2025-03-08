@@ -75,7 +75,7 @@ def rework_stdf(parameter):
     ptr_path = os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv")
     if os.path.exists(ptr_path):
         uty.write_log("Read PTR", FILENAME)
-        tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 6, 7, 10, 11, 12, 13, 14, 15])
+        tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 5, 6, 7, 10, 11, 12, 13, 14, 15])
         tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
     else :
         tmpptr = pd.DataFrame()
@@ -181,7 +181,6 @@ def rework_stdf(parameter):
     #     tmpptr.loc[tmpptr["TEST_NUM"] == 90020000, "LO_LIMIT"] = 0.5
 
     # ----------==================================================---------- #
-    uty.write_log("   Cleaning", FILENAME)
     # ----------==================================================---------- #
     # Data Paipeline cleaning
     # ----------==================================================---------- #
@@ -202,10 +201,33 @@ def rework_stdf(parameter):
         # Rework RESULT SCALE
         if not tmpptr.empty:
 
-            debug and uty.write_log("      A", FILENAME)
+            uty.write_log("Result Scale", FILENAME)
+            
+            tmpptr['PARM_FLG'] = tmpptr['PARM_FLG'].astype(str).apply(lambda x: int(x, 2))
 
-            # tmpptr["RES_SCAL"] = tmpptr.groupby("TEST_TXT")["RES_SCAL"].transform("min")
-    
+            tesnames = tmpptr["TEST_TXT"].unique()
+            
+            def custom_res_scal(group):
+                # Combina i valori delle tre colonne in una Serie.
+                combined = pd.concat([group['RES_SCAL'], group['LLM_SCAL'], group['HLM_SCAL']])
+                combined = combined[combined != 0]
+                valid_values = [2, 3, 6, 9, 12, 15, 18, -6, -9]
+                combined = combined[combined.isin(valid_values)]
+                
+                if combined.empty:
+                    return 0
+                
+                if all(combined > 0):
+                    return combined.max()
+                elif all(combined < 0):
+                    return combined.min()
+                else:
+                    return 0
+
+            for tesname in tesnames:
+                mask = tmpptr["TEST_TXT"] == tesname
+                tmpptr.loc[mask, 'RES_SCAL'] = custom_res_scal(tmpptr[mask])
+
             # Cast to string before concatenation
             tmpptr["UNITS"] = tmpptr["UNITS"].astype(str)
             tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"] = "m" + tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"]
@@ -219,55 +241,62 @@ def rework_stdf(parameter):
             tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = "G" + tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"]
             
             tmpptr["RESULT"] = tmpptr["RESULT"].astype(float)
-            tmpptr.loc[:, "RESULT"] = round(
-                tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
-            ).astype(float)
+            tmpptr["RESULT"] = round(tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
             
             tmpptr["HI_LIMIT"] = tmpptr["HI_LIMIT"].astype(float)
-            tmpptr.loc[:, "HI_LIMIT"] = round(
-                tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
-                3,
-            ).astype(float)
+            tmpptr["HI_LIMIT"] = round(tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
             
-            tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)            
-            tmpptr.loc[:, "LO_LIMIT"] = round(
-                tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10),
-                3,
-            ).astype(float)
-
+            tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)
+            tmpptr["LO_LIMIT"] = round(tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
+            
         # ----------==================================================---------- #
 
-        uty.write_log("Result Scale done", FILENAME)
+        uty.write_log("Split VDD", FILENAME)
+        
+        if "TTIME" not in composite: 
+            
+            # ----------==================================================---------- #
+            # SPLIT VDD TESTS
+            regex = f"(?P<TestName>.*)(_vio_|_vbt_|_v11_)(?P<VDD>[^_]+)_(?P<COM>{composite})_(?P<TARGET>.*)"
+            # work in a copy dataframe
+            testvdd = tmpptr.loc[tmpptr["TEST_TXT"].str.match(regex)].copy()
+            # execute split test name
+            testvdd[["TestName", "tmpvdd", "Volt", "COM", "TARGET"]] = testvdd[
+                "TEST_TXT"
+            ].str.extract(regex, expand=True)
+            # remove all unusefull test
+            testvdd = testvdd.dropna(subset=["TestName"])
+            testvdd["pltype"] = "BPLVDD"
+            # remove in test all
+            if not testvdd.empty:
+                tmpptr = tmpptr.loc[~tmpptr["TEST_TXT"].str.match(regex)]
+            # print(testvdd)
+            # ----------==================================================---------- #
 
-        # ----------==================================================---------- #
-        # SPLIT VDD TESTS
-        regex = f"(?P<TestName>.*)(_vio_|_vbt_|_v11_)(?P<VDD>[^_]+)_(?P<COM>{composite})_(?P<TARGET>.*)"
-        # work in a copy dataframe
-        testvdd = tmpptr.loc[tmpptr["TEST_TXT"].str.match(regex)].copy()
-        # execute split test name
-        testvdd[["TestName", "tmpvdd", "Volt", "COM", "TARGET"]] = testvdd[
-            "TEST_TXT"
-        ].str.extract(regex, expand=True)
-        # remove all unusefull test
-        testvdd = testvdd.dropna(subset=["TestName"])
-        testvdd["pltype"] = "BPLVDD"
-        # remove in test all
-        if not testvdd.empty:
-            tmpptr = tmpptr.loc[~tmpptr["TEST_TXT"].str.match(regex)]
-        # print(testvdd)
-        # ----------==================================================---------- #
-
-        # ----------==================================================---------- #
-        # SPLIT STANDARD TEST
-        regex = f"(?P<TestName>.*)_(?P<COM>{composite})_(?P<TARGET>.*)"
-        test = tmpptr.copy()
-        test[["TestName", "COM", "TARGET"]] = test["TEST_TXT"].str.extract(
-            regex, expand=True
-        )
-        test["pltype"] = "BPLTEMP"
-        test = test[test["COM"].notna()]
-        # uty.write_log("Rework FTR all test done", FILENAME)
-        # ----------==================================================---------- #
+            # ----------==================================================---------- #
+            # SPLIT STANDARD TEST
+            regex = f"(?P<TestName>.*)_(?P<COM>{composite})_(?P<TARGET>.*)"
+            test = tmpptr.copy()
+            test[["TestName", "COM", "TARGET"]] = test["TEST_TXT"].str.extract(
+                regex, expand=True
+            )
+            test["pltype"] = "BPLTEMP"
+            test = test[test["COM"].notna()]
+            # uty.write_log("Rework FTR all test done", FILENAME)
+            # ----------==================================================---------- #
+        
+        else :
+            # ----------==================================================---------- #
+            # SPLIT STANDARD TEST
+            regex = f"(?P<COM>log_ttime)__(?P<TestName>.*)::(?P<TARGET>.*)"
+            test = tmpptr.copy()
+            test[["COM","TestName", "TARGET"]] = test["TEST_TXT"].str.extract(
+                regex, expand=True
+            )
+            test["pltype"] = "BPLTEMP"
+            test = test[test["COM"].notna()]
+            # uty.write_log("Rework FTR all test done", FILENAME)
+            # ----------==================================================---------- #
 
         uty.write_log("PTR Split VDD done", FILENAME)
 
@@ -276,10 +305,18 @@ def rework_stdf(parameter):
         clearptr = pd.concat([test, testvdd])
 
         if not clearptr.empty:
-            regex = "(.*(:.*|DELTA.*))|(.*)"
-            clearptr[["tmp", "TARGET", "FTYPE"]] = clearptr["TARGET"].str.extract(
-                regex, expand=True
-            )
+            regex = "(.*(:.*):.*)|(.*(:.*|DELTA.*))|(.*)"
+            # clearptr[["tmp", "TARGET", "FTYPE"]] = clearptr["TARGET"].str.extract(
+            #     regex, expand=True
+            # )
+            extracted = clearptr["TARGET"].str.extract(regex, expand=True)
+
+            # Combina i risultati in una singola colonna temporanea
+            clearptr["tmp"] = extracted[0].combine_first(extracted[2]).combine_first(extracted[4])
+
+            # Estrazione di TARGET e FTYPE
+            clearptr["TARGET"] = extracted[1].combine_first(extracted[3])
+            clearptr["FTYPE"] = extracted[2].combine_first(extracted[4])
             clearptr.pop("tmp")
             clearptr.fillna({"TARGET": ""}, inplace=True)
             clearptr["TEST_TXT"] = (
@@ -291,6 +328,9 @@ def rework_stdf(parameter):
             ] = "TRIM"
             clearptr = clearptr.drop(
                 clearptr[clearptr["TARGET"].str.contains("TestTime")].index
+            )
+            clearptr = clearptr.drop(
+                clearptr[clearptr["TARGET"].str.contains("ttime")].index
             )
 
             clearptr.rename(
@@ -323,6 +363,7 @@ def rework_stdf(parameter):
 
     # ----------==================================================---------- #
     if not tmpftr.empty:
+
         # ----------==================================================---------- #
         # SPLIT VDD TESTS
         regex = f"(?P<TestName>.*)(_vio_|_vbt_|_v11_)(?P<VDD>[^_]+)_(?P<COM>{composite})_(?P<TARGET>.*)"
@@ -409,32 +450,31 @@ def rework_stdf(parameter):
     # uty.write_log("Rework STDF DONE", FILENAME)
 
 def main():
+    import json
+    parameter = {
+        "TITLE": "MBIST",
+        "COM": "mbist",
+        "FLOW": "EWS",
+        "TYPE": "STD",
+        "PRODUCT": "Mosquito",
+        "CODE": "44E",
+        "LOT": "P6AX86",
+        "WAFER": "1",
+        "Author": "Matteo Terranova",
+        "Mail": "matteo.terranova@st.com",
+        "Cut": "2.1",
+        "Site": "Catania",
+        "stdf": "example.com",
+        "RUN": "1",
+        "TEST_NUM": ["80003000", "80004000"],
+        "CSV": "r44exxxz_q443616_04_st44ez-t2kf1_e_ews1_tat2k06_20250301214005.std",
+    }
 
-    with open("src/jupiter/cfg.txt", "r") as file:
-        content = file.read()
-        lines = content.split("\n")
-        parameter = {
-            "TITLE": "MBIST",
-            "COM": "mbist",
-            "FLOW": "EWS",
-            "TYPE": "STD",
-            "PRODUCT": "Mosquito",
-            "CODE": "44E",
-            "LOT": "P6AX86",
-            "WAFER": "1",
-            "Author": "Matteo Terranova",
-            "Mail": "matteo.terranova@st.com",
-            "Cut": "2.1",
-            "Site": "Catania",
-            "stdf": "example.com",
-            "RUN": "1",
-            "TEST_NUM": ["80003000", "80004000"],
-            "CSV": "04_r498xxxz_p6ax86_01_st498z-t2kf1_e_ews1_tat2k11_20231222165236_030.std",
-        }
-        for line in lines:
-            if len(line) > 1:
-                key, value = line.split(":")
-                parameter[key] = value
+    with open("./src/jupiter/cfg.json", "r") as file:
+            content = file.read()
+            if not content.strip():
+                pass
+            parameter = json.loads(content)
 
     rework_stdf(parameter)
 

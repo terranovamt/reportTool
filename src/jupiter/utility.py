@@ -32,6 +32,26 @@ def color_cpk(val):
             return ""
     return ""
 
+def color_yield(val):
+    try:
+        val = float(val.strip('%'))
+    except ValueError:
+        return ""
+    if isinstance(val, (int, float)):
+        if val < 50:
+            return "background-color: #F23202"
+        elif 50 <= val < 60:
+            return "background-color: #E85D04"
+        elif 60 <= val < 70:
+            return "background-color: #F48C06"
+        elif 70<= val < 80:
+            return "background-color: #FAA307F0"
+        elif 80 <= val <= 99:
+            return "background-color: #FFBA08F1"
+        else:
+            return ""
+    return ""
+
 def color_kurtosis(val):
     try:
         val = float(val)
@@ -147,3 +167,36 @@ def write_log(message, filename="../run.log"):
             file.write(timestamp + " Log file created.\n")
     except OSError as e:
         print(f"An error occurred: {e}")
+
+def interpolate_color(color1, color2, factor: float):
+    """Interpolates between two colors."""
+    return [color1[i] + (color2[i] - color1[i]) * factor for i in range(3)]
+
+def hex_to_rgb(hex_color: str):
+    """Converts a hex color to an RGB tuple."""
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hex(rgb_color):
+    """Converts an RGB tuple to a hex color."""
+    return '#{:02x}{:02x}{:02x}'.format(int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]))
+
+def create_gradient(colors, num_colors):
+    """Creates a gradient of colors."""
+    gradient = []
+    num_segments = len(colors) - 1
+    colors_per_segment = num_colors // num_segments
+    
+    for i in range(num_segments):
+        color1 = hex_to_rgb(colors[i])
+        color2 = hex_to_rgb(colors[i + 1])
+        
+        for j in range(colors_per_segment):
+            factor = j / float(colors_per_segment)
+            interpolated_color = interpolate_color(color1, color2, factor)
+            gradient.append(rgb_to_hex(interpolated_color))
+    
+    # Add the last color
+    gradient.append(colors[-1])
+    
+    return gradient

@@ -47,7 +47,7 @@ h1 {
 }
 
 .table tbody td:focus,
-.overlayStdf .table input:focus {
+.overlayFile .table input:focus {
   outline-color: var(--secondary-color);
 }
 
@@ -270,32 +270,32 @@ h1 {
   background-color: var(--highlight-secondary-color);
 }
 
-.stdf-icon {
+.file-icon {
   width: 24px;
   height: 24px;
   cursor: pointer;
 }
 
-.overlayStdf {
+.overlayFile {
   width: 500px;
   cursor: pointer;
 }
 
-.overlayStdf .table input {
+.overlayFile .table input {
   color: var(--primary-color);
-  border-color: var(--text-color);
+  border-color: var(--text-color); 
   width: 100%;
   border-style: none;
   padding: 10px 5px 10px 10px;
   background-color: transparent;
 }
 
-.overlayStdf .table td {
+.overlayFile .table td {
   padding: 0px;
   margin: 10px;
 }
 
-.overlayStdf .table input:focus {
+.overlayFile .table input:focus {
   outline-color: var(--secondary-color);
   outline-width:1px;
 }

@@ -162,11 +162,73 @@ def process_composite(parameter, csv_file,stdf_folder,csv_folder):
             for composite in composites[1:]:
                 parameter["TITLE"] = composite.upper()
                 process_single_composite(parameter, tsr, composite, csv_file,stdf_folder,csv_folder)
+        elif str(parameter["COM"]).upper() == "TTIME":
+            process_ttime(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
+        elif str(parameter["COM"]).upper() == "YIELD":
+            process_yield(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
         else:
             process_single_composite(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
     except Exception as e:
         print(f"Error processing composite: {e}")
 
+def process_yield(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
+    """
+    Process a FAKE composite for yeald analysis and execute the report generation.
+
+    Args:
+        parameter (dict): Parameters for processing.
+        tsr (DataFrame): DataFrame containing test results.
+        composite (str): Composite name to process.
+        csv_file (str): CSV file name to process.
+    """
+
+    uty.write_log(f"Converting tests by test list",FILENAME)
+    csv_files = stdf2csv(stdf_folder, csv_folder, f"-b")
+    if len(csv_files) == 0:
+        print(f"No Extaction good : {composite}")
+        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        return
+    parameter["COM"] = composite
+    parameter["TEST_NUM"] = ""
+    parameter["CSV"] = csv_file
+
+    debug and print(parameter)
+    exec(parameter)
+    
+def process_ttime(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
+    """
+    Process a FAKE composite for test time analysis and execute the report generation.
+
+    Args:
+        parameter (dict): Parameters for processing.
+        tsr (DataFrame): DataFrame containing test results.
+        composite (str): Composite name to process.
+        csv_file (str): CSV file name to process.
+    """
+    match_group = tsr["TEST_NAM"].str.extract(
+        r"(log_ttime.*)".format(composite)
+    )
+    tsr["match_group"] = match_group[0]
+
+    test_numbers = tsr.loc[tsr["match_group"].notnull(), "TEST_NUM"].unique().tolist()
+
+    if len(test_numbers) == 0:
+        print(f"No tests found for composite: {composite}")
+        uty.write_log(f"No tests found for composite: {composite}",FILENAME)
+        return
+    test_numbers_str = ', '.join(map(str, test_numbers))
+    uty.write_log(f"Converting tests by test list",FILENAME)
+    csv_files = stdf2csv(stdf_folder, csv_folder, f"-l {test_numbers_str}")
+    if len(csv_files) == 0:
+        print(f"No Extaction good : {composite}")
+        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        return
+    parameter["COM"] = composite
+    parameter["TEST_NUM"] = test_numbers
+    parameter["CSV"] = csv_file
+
+    debug and print(parameter)
+    exec(parameter)
 
 def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
     """
@@ -218,7 +280,6 @@ def write_config_file(parameter):
         
         with open(cfgfile, mode="wt", encoding="utf-8") as file:
             json.dump(parameter, file, indent=4)
-        print("|--> TITLE:", parameter["TITLE"])
     except Exception as e:
         print(f"Error writing the configuration file: {e}")
 
@@ -290,24 +351,7 @@ def rework_report(parameter):
             encoding="utf8",
         ) as file:
             for line_number, line in enumerate(file, start=1):
-                if line_number == 6392:
-                    new_str = """
-.jp-Notebook {
-  outline: none;
-  overflow: auto;
-  background: var(--jp-layout-color0);
-  padding: 15px;
-  background-color: #fff;
-  min-height: 0;
-  box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1000px;
-} """
-                    print(new_str, end="\n")
-                elif 6393 <= line_number <= 6397:
-                    print("")
-                elif line_number == 6:
+                if line_number == 6:
                     new_str = (
                         "<title>"
                         + parameter["TITLE"]
@@ -335,6 +379,7 @@ def pre_exec(parameter):
     """
     list_csv_files = []
     csv_folder = os.path.abspath("src/csv")
+    print("|--> TITLE:", parameter["TITLE"])
 
     if parameter["WAFER"] == "all":
         process_all_wafers(parameter, csv_folder)
@@ -353,7 +398,8 @@ def exec(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    rework_stdf(parameter)
+    if str(parameter["COM"].upper()) != "YIELD":
+        rework_stdf(parameter)
     write_config_file(parameter)
     timestartsub = convert_notebook_to_html(parameter)
     post_exec(parameter,timestartsub)
@@ -371,7 +417,7 @@ def post_exec(parameter,timestartsub):
     uty.write_log("postexec DONE",FILENAME)
     timeendsub = datetime.datetime.now()
     timeexecsub = timeendsub - timestartsub
-    print("|--> Execution time:", timeexecsub,"\n")
+    print("Conversion time:", timeexecsub,"\n")
 
 def generate(data):
     '''Genrate forn HTML GUI'''

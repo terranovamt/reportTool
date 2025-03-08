@@ -1,44 +1,23 @@
 {
-    "TITLE": "Power Managment Unit",
+    "TITLE": "PMU",
     "COM": "PMU",
-    "FLOW": "EWS",
-    "TYPE": "STD",
+    "FLOW": "EWS1",
+    "TYPE": "CONDITION",
     "PRODUCT": "Mosquito512K",
     "CODE": "44E",
-    "LOT": "Q443616",
-    "WAFER": "12",
-    "CUT": "1.1",
-    "REVISION": "0.1",
-    "STDF": {
-        "12": {
-            "corner": "TTTT",
-            "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\12"
-        }
-    },
-    "RUN": "1",
+    "LOT": "P6AX86",
+    "WAFER": "1",
     "AUTHOR": "Matteo Terranova",
     "MAIL": "matteo.terranova@st.com",
-    "SITE": "Catania",
     "GROUP": "MDRF - EP - GPAM",
+    "Cut": "2.1",
+    "SITE": "Catania",
+    "REVISION": "0.1",
+    "stdf": "example.com",
+    "RUN": "1",
     "TEST_NUM": [
-        10001000,
-        10001001,
-        10001002,
-        10001003,
-        10003000,
-        10003001,
-        10003002,
-        10003003,
-        10005000,
-        10005001,
-        10005002,
-        10005003,
-        10007000,
-        1008000,
-        1009000,
-        10010000,
-        10011000,
-        10012000
+        "80003000",
+        "80004000"
     ],
-    "CSV": "r44exxxz_q443616q05_12_st44ez-t2kf1_e_ews1_tat2k06_20250224090631.std"
+    "CSV": "r44exxxz_q443616_04_st44ez-t2kf1_e_ews1_tat2k06_20250301214005.std"
 }

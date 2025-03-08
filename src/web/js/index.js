@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (field === 'Run') {
           const checkbox = cell.querySelector('.yep');
           rowData[field] = checkbox && checkbox.checked ? '1' : '0';
-        } else if (field === 'STDF') {
+        } else if (field === 'File') {
           const filePath = cell ? cell.dataset.filePath : '{}';
           rowData[field] = filePath ? JSON.parse(filePath) : {};
         } else {
@@ -106,16 +106,16 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Validate STDF paths only for rows with 'Run' set to '1'
+    // Validate File paths only for rows with 'Run' set to '1'
     for (let i = 0; i < data.length; i++) {
       const rowData = data[i];
       if (rowData.Run === '1') {
         const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer.split(', ').map(Number);
-        const stdfPaths = rowData.STDF;
+        const filePath = rowData.File;
         for (const wafer of wafers) {
-          const stdfPath = stdfPaths[wafer];
-          if (!stdfPath || !stdfPath.path || stdfPath.path.trim() === '' || !stdfPath.corner || stdfPath.corner.trim() === '') {
-            alert(`Please specify a valid STDF path and corner for wafer ${wafer} in row ${i + 1}.`);
+          const filePath = filePath[wafer];
+          if (!filePath || !filePath.path || filePath.path.trim() === '' || !filePath.corner || filePath.corner.trim() === '') {
+            alert(`Please specify a valid File path and corner for wafer ${wafer} in row ${i + 1}.`);
             return;
           }
         }
@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(checkbox);
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
-      } else if (field === 'STDF') {
-        updateStdfIcon(cell, JSON.stringify(rowData[field]));
+      } else if (field === 'File') {
+        updateFileIcon(cell, JSON.stringify(rowData[field]));
         cell.addEventListener('click', () => openOverlay(field, cell));
       } else {
         // Make cells editable except for specific fields
@@ -197,6 +197,12 @@ document.addEventListener('DOMContentLoaded', function () {
           });
         }
         cell.innerText = rowData[field] || '';
+
+        // Disable COM field if Type is TTIME or YIELD
+        if (field === 'COM' && (rowData['Type'] === 'TTIME' || rowData['Type'] === 'YIELD')) {
+          cell.innerText = rowData['Type'];
+          cell.contentEditable = false;
+        }
       }
     });
     // console.log('Row added:', rowData); // Debug log
@@ -223,8 +229,8 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxApple.appendChild(checkbox);
         checkboxApple.appendChild(label);
         cell.appendChild(checkboxApple);
-      } else if (field === 'STDF') {
-        updateStdfIcon(cell, '');
+      } else if (field === 'File') {
+        updateFileIcon(cell, '');
         cell.addEventListener('click', () => openOverlay(field, cell));
       } else {
         // Make cells editable except for specific fields
@@ -243,10 +249,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // console.log('Empty row added'); // Debug log
   }
 
-  // Function to update STDF icon
-  function updateStdfIcon(cell, filePath) {
+  // Function to update File icon
+  function updateFileIcon(cell, filePath) {
     const icon = document.createElement('img');
-    icon.classList.add('stdf-icon');
+    icon.classList.add('file-icon');
     icon.src = filePath ? 'https://www.svgrepo.com/show/532747/file-alt.svg' : 'https://www.svgrepo.com/show/532811/file-xmark-alt-1.svg';
     cell.innerHTML = '';
     cell.appendChild(icon);
@@ -270,15 +276,14 @@ document.addEventListener('DOMContentLoaded', function () {
     overlayContent.appendChild(closeButton);
 
     if (field === 'Flow') {
-      createOptions(['EWS', 'FT'], cell);
+      createOptions(['EWS1', 'EWS2', 'EWS3', 'EWSDIE', 'FT1'], cell);
     } else if (field === 'Type') {
-      createOptions(['STD', 'x30'], cell);
+      createOptions(['VOLUME', 'x30', 'TTIME', 'YIELD', 'CONDITION', 'CONCLUSION'], cell);
     } else if (field === 'Wafer') {
       createMultiSelectOptions(cell);
-    } else if (field === 'STDF') {
+    } else if (field === 'File') {
       createStdfOverlay(cell);
     }
-
     overlay.style.display = 'block';
   }
 
@@ -290,11 +295,37 @@ document.addEventListener('DOMContentLoaded', function () {
       button.innerText = option;
       button.addEventListener('click', function () {
         cell.innerText = option;
+
+        // Update COM field if Type is TTIME or YIELD
+        const comCell = cell.parentElement.querySelector('td[data-field="COM"]');
+        if (comCell) {
+          if (option === 'TTIME' || option === 'YIELD') {
+            comCell.innerText = option;
+            comCell.contentEditable = false;
+          } else {
+            comCell.contentEditable = true;
+          }
+        }
+
         closeOverlay();
       });
       overlayContent.appendChild(button);
     });
   }
+
+  document.addEventListener('input', function (event) {
+    const target = event.target;
+    if (target.tagName === 'TD' && target.dataset.field === 'Type') {
+      const typeValue = target.innerText.trim();
+      const comCell = target.parentElement.querySelector('td[data-field="COM"]');
+      if (comCell && (typeValue === 'TTIME' || typeValue === 'YIELD')) {
+        comCell.innerText = typeValue;
+        comCell.contentEditable = false;
+      } else if (comCell) {
+        comCell.contentEditable = true;
+      }
+    }
+  });
 
   // Function to create multi-select options for the overlay
   function createMultiSelectOptions(cell) {
@@ -356,9 +387,9 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Error parsing JSON:', e);
     }
 
-    // Create table for wafer, corner, and STDF directory
+    // Create table for wafer, corner, and File directory
     const div = document.createElement('div');
-    div.classList.add('overlayStdf');
+    div.classList.add('overlayFile');
     const table = document.createElement('table');
     table.classList.add('table', 'table-bordered', 'table-hover');
     const thead = document.createElement('thead');
@@ -368,11 +399,11 @@ document.addEventListener('DOMContentLoaded', function () {
     waferHeader.innerText = 'WAFER';
     const cornerHeader = document.createElement('th');
     cornerHeader.innerText = 'CORNER';
-    const stdfHeader = document.createElement('th');
-    stdfHeader.innerText = 'STDF Directory';
+    const fileHeader = document.createElement('th');
+    fileHeader.innerText = 'File Directory';
     headerRow.appendChild(waferHeader);
     headerRow.appendChild(cornerHeader);
-    headerRow.appendChild(stdfHeader);
+    headerRow.appendChild(fileHeader);
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
@@ -385,23 +416,23 @@ document.addEventListener('DOMContentLoaded', function () {
       const cornerCell = document.createElement('td');
       cornerCell.innerText = existingPaths[wafer]?.corner || 'TTTT';
       cornerCell.addEventListener('click', () => openCornerOverlay(cornerCell));
-      const stdfCell = document.createElement('td');
-      const stdfInput = document.createElement('input');
-      stdfInput.type = 'text';
-      stdfInput.dataset.wafer = wafer;
-      stdfInput.value = existingPaths[wafer]?.path || ''; // Load existing path if available
-      stdfInput.placeholder = 'Enter directory path';
-      stdfInput.addEventListener('input', () => {
-        stdfCell.dataset.filePath = stdfInput.value;
+      const fileCell = document.createElement('td');
+      const fileInput = document.createElement('input');
+      fileInput.type = 'text';
+      fileInput.dataset.wafer = wafer;
+      fileInput.value = existingPaths[wafer]?.path || ''; // Load existing path if available
+      fileInput.placeholder = 'Enter directory path';
+      fileInput.addEventListener('input', () => {
+        fileCell.dataset.filePath = fileInput.value;
         const runCell = cell.parentElement.querySelector('td[data-field="Run"] input[type="checkbox"]');
         if (runCell) {
           runCell.checked = true;
         }
       });
-      stdfCell.appendChild(stdfInput);
+      fileCell.appendChild(fileInput);
       row.appendChild(waferCell);
       row.appendChild(cornerCell);
-      row.appendChild(stdfCell);
+      row.appendChild(fileCell);
       tbody.appendChild(row);
     });
 
@@ -413,21 +444,21 @@ document.addEventListener('DOMContentLoaded', function () {
     saveButton.innerText = 'Save';
     saveButton.classList.add('btn', 'btn-primary');
     saveButton.addEventListener('click', () => {
-      const stdfPaths = {};
+      const filePath = {};
       tbody.querySelectorAll('tr').forEach((row) => {
         const wafer = row.querySelector('td').innerText;
         const corner = row.querySelector('td + td').innerText;
         const filePath = row.querySelector('td + td + td input').value;
         if (filePath.trim() !== '' && wafer.trim() !== '' && corner.trim() !== '') {
-          stdfPaths[wafer] = {
+          filePath[wafer] = {
             corner: corner,
             path: filePath.replace(/\/[^\/]+\.stdf$/, '/'), // Save only the directory path
           };
         }
       });
-      cell.dataset.filePath = JSON.stringify(stdfPaths);
+      cell.dataset.filePath = JSON.stringify(filePath);
       cell.innerText = 'Paths set'; // Update the cell text
-      updateStdfIcon(cell, cell.dataset.filePath); // Use the JSON string as filePath
+      updateFileIcon(cell, cell.dataset.filePath); // Use the JSON string as filePath
       closeOverlay();
     });
     div.appendChild(saveButton);
@@ -450,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function allFieldsFilled(row) {
     const cells = row.getElementsByTagName('td');
     for (let i = 0; i < cells.length; i++) {
-      if (!cells[i].innerText.trim() && !cells[i].querySelector('.checkbox-apple') && !cells[i].querySelector('.stdf-icon')) {
+      if (!cells[i].innerText.trim() && !cells[i].querySelector('.checkbox-apple') && !cells[i].querySelector('.file-icon')) {
         return false;
       }
     }
@@ -462,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const target = event.target;
     if (target.tagName === 'TD' && target.dataset.field) {
       const field = target.dataset.field;
-      if (field === 'Flow' || field === 'Type' || field === 'Wafer' || field === 'STDF') {
+      if (field === 'Flow' || field === 'Type' || field === 'Wafer' || field === 'File') {
         openOverlay(field, target);
       }
     }
