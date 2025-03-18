@@ -8,11 +8,13 @@ import pandas as pd
 import jupiter.utility as uty
 from stdf2csv import *
 from rework_stdf import rework_stdf
+from condition import condition_rework
 from guihtml import guihtml
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 FILENAME = os.path.abspath("src/run.log")
+
 
 def read_parameters(file_path):
     """
@@ -50,6 +52,7 @@ def process_all_wafers(parameter, csv_folder):
         debug and print(stdf_folders, csv_folder)
         process_wafer(parameter, csv_folder, i)
 
+
 def process_multi_wafers(parameter, csv_folder):
     """
     Process all wafers and convert STDF files to CSV.
@@ -61,7 +64,7 @@ def process_multi_wafers(parameter, csv_folder):
     Returns:
         list: List of CSV files generated.
     """
-    wafers = parameter["WAFER"].replace(" ","").split(",")
+    wafers = parameter["WAFER"].replace(" ", "").split(",")
     for wafer in wafers:
         parameter["WAFER"] = wafer
         debug and print(stdf_folders, csv_folder)
@@ -82,6 +85,29 @@ def process_single_wafer(parameter, csv_folder):
     debug and print(stdf_folders, csv_folder)
     process_wafer(parameter, csv_folder, parameter["WAFER"])
 
+
+def copySTDF(stdf_folder):
+    tmp_folder = ".\\src\\tmpstdf"
+    if not os.path.exists(tmp_folder):
+        os.makedirs(tmp_folder)
+    for fold in stdf_folder:
+        for item in os.listdir(fold):
+            s = os.path.join(fold, item)
+            d = os.path.join(tmp_folder, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, dirs_exist_ok=True)
+            else:
+                shutil.copy2(s, d)
+    return [tmp_folder]
+
+
+def clearTmpSTDF():
+    tmp_folder = ".\\src\\tmpstdf"
+    for root, dirs, files in os.walk(tmp_folder):
+        for name in files:
+            os.remove(os.path.join(root, name))
+
+
 def process_wafer(parameter, csv_folder, wafer):
     """
     Process a wafer and convert STDF files to CSV.
@@ -97,10 +123,12 @@ def process_wafer(parameter, csv_folder, wafer):
     parameter["WAFER"] = wafer
     stdf_folder = get_stdf_folder(parameter, wafer)
     debug and print(stdf_folder, csv_folder)
+    stdf_folder = copySTDF(stdf_folder)
+
     csv_files = stdf2csv(stdf_folder, csv_folder, "-t")
-    for csv_file in csv_files: 
+    for csv_file in csv_files:
         parameter["TEST_NUM"] = []
-        process_composite(parameter, csv_file, stdf_folder,csv_folder)
+        process_composite(parameter, csv_file, stdf_folder, csv_folder)
 
 
 def get_stdf_folder(parameter, wafer):
@@ -115,31 +143,31 @@ def get_stdf_folder(parameter, wafer):
         str: Constructed STDF folder path.
     """
     try:
-        stdf_path = parameter["STDF"].get(str(wafer)).get("path")
+        stdf_path = parameter["FILE"].get(str(wafer)).get("path")
         if not stdf_path:
             print(f"Error: No path found for wafer {wafer}")
             return None
-        
+
         resolved_path = os.path.abspath(stdf_path)
-        
+
         # Check if the directory exists
         if not os.path.isdir(resolved_path):
             print(f"Error: Directory {resolved_path} does not exist")
             return None
-        
+
         # Check if there is at least one .std or .stdf file in the directory
         files = os.listdir(resolved_path)
-        if not any(file.endswith(('.std', '.stdf')) for file in files):
+        if not any(file.endswith((".std", ".stdf")) for file in files):
             print(f"Error: No .std or .stdf files found in {resolved_path}")
             return None
-        
+
         return [resolved_path]
     except Exception as e:
         print(f"Error: {e}")
         return None
 
 
-def process_composite(parameter, csv_file,stdf_folder,csv_folder):
+def process_composite(parameter, csv_file, stdf_folder, csv_folder):
     """
     Process the composite data from a CSV file and execute the report generation.
 
@@ -161,17 +189,55 @@ def process_composite(parameter, csv_file,stdf_folder,csv_folder):
 
             for composite in composites[1:]:
                 parameter["TITLE"] = composite.upper()
-                process_single_composite(parameter, tsr, composite, csv_file,stdf_folder,csv_folder)
+                process_single_composite(
+                    parameter, tsr, composite, csv_file, stdf_folder, csv_folder
+                )
         elif str(parameter["COM"]).upper() == "TTIME":
-            process_ttime(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
+            process_ttime(
+                parameter, tsr, parameter["COM"], csv_file, stdf_folder, csv_folder
+            )
         elif str(parameter["COM"]).upper() == "YIELD":
-            process_yield(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
+            process_yield(
+                parameter, tsr, parameter["COM"], csv_file, stdf_folder, csv_folder
+            )
+        elif str(parameter["COM"]).upper() == "CONDITION":
+            process_condition(
+                parameter, tsr, parameter["COM"], csv_file, stdf_folder, csv_folder
+            )
         else:
-            process_single_composite(parameter, tsr, parameter["COM"], csv_file,stdf_folder,csv_folder)
+            process_single_composite(
+                parameter, tsr, parameter["COM"], csv_file, stdf_folder, csv_folder
+            )
     except Exception as e:
         print(f"Error processing composite: {e}")
 
-def process_yield(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
+
+def process_condition(parameter, composite, stdf_folder):
+    """
+    Process a FAKE composite for condition report and execute generation.
+
+    Args:
+        parameter (dict): Parameters for processing.
+        tsr (DataFrame): DataFrame containing test results.
+        composite (str): Composite name to process.
+        csv_file (str): CSV file name to process.
+    """
+
+    uty.write_log(f"Converting ANAFLOW by COM", FILENAME)
+    csv_file = condition_rework(parameter, stdf_folder)
+    if len(csv_file) == 0:
+        print(f"No Extaction good : {composite}")
+        uty.write_log(f"No Extaction good : {composite}", FILENAME)
+        return
+    parameter["COM"] = composite
+    parameter["TEST_NUM"] = ""
+    parameter["CSV"] = csv_file
+
+    debug and print(parameter)
+    exec(parameter)
+
+
+def process_yield(parameter, tsr, composite, csv_file, stdf_folder, csv_folder):
     """
     Process a FAKE composite for yeald analysis and execute the report generation.
 
@@ -182,11 +248,11 @@ def process_yield(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
         csv_file (str): CSV file name to process.
     """
 
-    uty.write_log(f"Converting tests by test list",FILENAME)
+    uty.write_log(f"Converting tests by test list", FILENAME)
     csv_files = stdf2csv(stdf_folder, csv_folder, f"-b")
     if len(csv_files) == 0:
         print(f"No Extaction good : {composite}")
-        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        uty.write_log(f"No Extaction good : {composite}", FILENAME)
         return
     parameter["COM"] = composite
     parameter["TEST_NUM"] = ""
@@ -194,8 +260,9 @@ def process_yield(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
 
     debug and print(parameter)
     exec(parameter)
-    
-def process_ttime(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
+
+
+def process_ttime(parameter, tsr, composite, csv_file, stdf_folder, csv_folder):
     """
     Process a FAKE composite for test time analysis and execute the report generation.
 
@@ -205,23 +272,21 @@ def process_ttime(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
         composite (str): Composite name to process.
         csv_file (str): CSV file name to process.
     """
-    match_group = tsr["TEST_NAM"].str.extract(
-        r"(log_ttime.*)".format(composite)
-    )
+    match_group = tsr["TEST_NAM"].str.extract(r"(log_ttime.*)".format(composite))
     tsr["match_group"] = match_group[0]
 
     test_numbers = tsr.loc[tsr["match_group"].notnull(), "TEST_NUM"].unique().tolist()
 
     if len(test_numbers) == 0:
         print(f"No tests found for composite: {composite}")
-        uty.write_log(f"No tests found for composite: {composite}",FILENAME)
+        uty.write_log(f"No tests found for composite: {composite}", FILENAME)
         return
-    test_numbers_str = ', '.join(map(str, test_numbers))
-    uty.write_log(f"Converting tests by test list",FILENAME)
+    test_numbers_str = ", ".join(map(str, test_numbers))
+    uty.write_log(f"Converting tests by test list", FILENAME)
     csv_files = stdf2csv(stdf_folder, csv_folder, f"-l {test_numbers_str}")
     if len(csv_files) == 0:
         print(f"No Extaction good : {composite}")
-        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        uty.write_log(f"No Extaction good : {composite}", FILENAME)
         return
     parameter["COM"] = composite
     parameter["TEST_NUM"] = test_numbers
@@ -230,7 +295,10 @@ def process_ttime(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
     debug and print(parameter)
     exec(parameter)
 
-def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,csv_folder):
+
+def process_single_composite(
+    parameter, tsr, composite, csv_file, stdf_folder, csv_folder
+):
     """
     Process a single composite and execute the report generation.
 
@@ -249,14 +317,14 @@ def process_single_composite(parameter, tsr, composite, csv_file ,stdf_folder,cs
 
     if len(test_numbers) == 0:
         print(f"No tests found for composite: {composite}")
-        uty.write_log(f"No tests found for composite: {composite}",FILENAME)
+        uty.write_log(f"No tests found for composite: {composite}", FILENAME)
         return
-    test_numbers_str = ', '.join(map(str, test_numbers))
-    uty.write_log(f"Converting tests by test list",FILENAME)
+    test_numbers_str = ", ".join(map(str, test_numbers))
+    uty.write_log(f"Converting tests by test list", FILENAME)
     csv_files = stdf2csv(stdf_folder, csv_folder, f"-l {test_numbers_str}")
     if len(csv_files) == 0:
         print(f"No Extaction good : {composite}")
-        uty.write_log(f"No Extaction good : {composite}",FILENAME)
+        uty.write_log(f"No Extaction good : {composite}", FILENAME)
         return
     parameter["COM"] = composite
     parameter["TEST_NUM"] = test_numbers
@@ -276,8 +344,11 @@ def write_config_file(parameter):
     cfgfile = f"./src/jupiter/cfg.json"
     try:
         # Convert any Series objects in the parameter dictionary to lists
-        parameter = {k: v.tolist() if isinstance(v, pd.Series) else v for k, v in parameter.items()}
-        
+        parameter = {
+            k: v.tolist() if isinstance(v, pd.Series) else v
+            for k, v in parameter.items()
+        }
+
         with open(cfgfile, mode="wt", encoding="utf-8") as file:
             json.dump(parameter, file, indent=4)
     except Exception as e:
@@ -291,20 +362,29 @@ def convert_notebook_to_html(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    uty.write_log("Start Juipiter conversion",FILENAME)
+    uty.write_log("Start Jupyter conversion", FILENAME)
     timestartsub = datetime.datetime.now()
     str_output = (
         parameter["TITLE"] + " " + parameter["FLOW"] + "_" + parameter["TYPE"].lower()
     )
-    dir_output = os.path.abspath(
-        os.path.join(
-            "Report",
-            f"{parameter['LOT']}",
-            f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
-            parameter["FLOW"],
-            parameter["TYPE"].upper(),
+    if parameter["LOT"] != "-":
+        dir_output = os.path.abspath(
+            os.path.join(
+                "Report",
+                f"{parameter['LOT']}",
+                f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
+                parameter["FLOW"],
+                parameter["TYPE"].upper(),
+            )
         )
-    )
+    else:
+        dir_output = os.path.abspath(
+            os.path.join(
+                "Report",
+                f"{parameter['PRODUCT']}",
+                parameter["FLOW"],
+            )
+        )
     if not os.path.exists(dir_output):
         os.makedirs(dir_output)
 
@@ -321,8 +401,8 @@ def convert_notebook_to_html(parameter):
     else:
         print(f"ERROR: execution failed {cmd}")
 
-    uty.write_log("DONE Jupiter conversion",FILENAME)
-    
+    uty.write_log("DONE Jupyter conversion", FILENAME)
+
     return timestartsub
 
 
@@ -333,16 +413,26 @@ def rework_report(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    report_path = os.path.abspath(
-        os.path.join(
-            "./Report",
-            f"{parameter['LOT']}",
-            f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
-            parameter["FLOW"],
-            parameter["TYPE"].upper(),
-            f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html"
+    if parameter["LOT"] != "-":
+        report_path = os.path.abspath(
+            os.path.join(
+                "./Report",
+                f"{parameter['LOT']}",
+                f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
+                parameter["FLOW"],
+                parameter["TYPE"].upper(),
+                f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html",
+            )
         )
-    )
+    else:
+        report_path = os.path.abspath(
+            os.path.join(
+                "./Report",
+                f"{parameter['PRODUCT']}",
+                parameter["FLOW"],
+                f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html",
+            )
+        )
     try:
         with fileinput.FileInput(
             files=report_path,
@@ -364,6 +454,7 @@ def rework_report(parameter):
                     print(line, end="")
         os.remove(report_path + ".bak")
         import webbrowser
+
         # print(report_path)
         webbrowser.open(f"file:/{report_path}")
     except Exception as e:
@@ -380,15 +471,19 @@ def pre_exec(parameter):
     list_csv_files = []
     csv_folder = os.path.abspath("src/csv")
     print("|--> TITLE:", parameter["TITLE"])
+    clearTmpSTDF()
 
     if parameter["WAFER"] == "all":
         process_all_wafers(parameter, csv_folder)
     elif "," in parameter["WAFER"]:
         process_multi_wafers(parameter, csv_folder)
+    elif parameter["WAFER"] == "-" and str(parameter["TYPE"]).upper() == "CONDITION":
+        stdf_path = parameter["FILE"].get("-").get("path")
+        process_condition(parameter, parameter["COM"], stdf_path)
     else:
         process_single_wafer(parameter, csv_folder)
 
-    uty.write_log("STDF2CSV DONE",FILENAME)
+    uty.write_log("STDF2CSV DONE", FILENAME)
 
 
 def exec(parameter):
@@ -398,48 +493,62 @@ def exec(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    if str(parameter["COM"].upper()) != "YIELD":
+    if (
+        str(parameter["COM"].upper()) == "YIELD"
+        or str(parameter["TYPE"]).upper() == "CONDITION"
+    ):
+        pass
+    else:
         rework_stdf(parameter)
     write_config_file(parameter)
     timestartsub = convert_notebook_to_html(parameter)
-    post_exec(parameter,timestartsub)
+    post_exec(parameter, timestartsub)
 
 
-def post_exec(parameter,timestartsub):
+def post_exec(parameter, timestartsub):
     """
     Post-execution function to handle final steps.
 
     Args:
         parameter (dict): Parameters for processing.
     """
-    uty.write_log("postexec START",FILENAME)
+    uty.write_log("postexec START", FILENAME)
     rework_report(parameter)
-    uty.write_log("postexec DONE",FILENAME)
+    clearTmpSTDF()
+    uty.write_log("postexec DONE", FILENAME)
     timeendsub = datetime.datetime.now()
     timeexecsub = timeendsub - timestartsub
-    print("Conversion time:", timeexecsub,"\n")
+    print("Conversion time:", timeexecsub, "\n")
+
 
 def generate(data):
-    '''Genrate forn HTML GUI'''
+    """Genrate forn HTML GUI"""
     timestart = datetime.datetime.now()
-    author_info = data['authorInfo']
+    author_info = data["authorInfo"]
 
-    parameters = pd.DataFrame([
-        {**{k.upper(): v for k, v in entry.items()}, **{k.upper(): v for k, v in author_info.items()}}
-        for entry in data['data']
-        if entry['Run'] == '1'
-    ])
+    parameters = pd.DataFrame(
+        [
+            {
+                **{k.upper(): v for k, v in entry.items()},
+                **{k.upper(): v for k, v in author_info.items()},
+            }
+            for entry in data["data"]
+            if entry["Run"] == "1"
+        ]
+    )
     parameters.index += 1
     print(parameters.to_string())
     print("\n")
     os.environ["PYDEVD_DISABLE_FILE_VALIDATION"] = "1"
     for _, parameter in parameters.iterrows():
-        uty.write_log(f"START {parameter['TITLE']}",FILENAME)
+        uty.write_log(f"START {parameter['TITLE']}", FILENAME)
         pre_exec(parameter)
-        uty.write_log("DONE",FILENAME)
+        uty.write_log("DONE", FILENAME)
     timeend = datetime.datetime.now()
     timeexec = timeend - timestart
+    uty.write_log("     ...     ", FILENAME)
     print("|--> Total execution time:", timeexec)
+
 
 def main():
     """
@@ -447,7 +556,9 @@ def main():
     """
     global debug
     debug = False
+    import asyncio
 
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     guihtml()
 
     # timestart = datetime.datetime.now()

@@ -122,7 +122,8 @@ class ThreadingSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer)
 
 def start_server(port):
     with ThreadingSimpleServer(("", port), Handler) as httpd:
-        print(f"Serving at port {port}")
+        ip = socket.gethostbyname(socket.gethostname())
+        print(f"Serving at {ip}:{port}")
         httpd.serve_forever()
 
 def find_available_port(start_port, max_port):

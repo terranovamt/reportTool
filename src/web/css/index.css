@@ -308,3 +308,8 @@ img[alt="Informazioni"] {
   left: 10px;
   cursor: pointer;
 }
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}

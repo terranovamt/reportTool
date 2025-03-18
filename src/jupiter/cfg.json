@@ -1,23 +1,36 @@
 {
-    "TITLE": "PMU",
-    "COM": "PMU",
-    "FLOW": "EWS1",
-    "TYPE": "CONDITION",
+    "TITLE": "External Oscillator",
+    "COM": "EOSC_CKD",
+    "FLOW": "EWS2",
+    "TYPE": "VOLUME",
     "PRODUCT": "Mosquito512K",
     "CODE": "44E",
-    "LOT": "P6AX86",
-    "WAFER": "1",
+    "LOT": "Q443616",
+    "WAFER": "4",
+    "CUT": "1.1",
+    "REVISION": "0.1",
+    "FILE": {
+        "4": {
+            "corner": "TTTT",
+            "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS2\\A MANO\\Q443616_04"
+        }
+    },
+    "RUN": "1",
     "AUTHOR": "Matteo Terranova",
     "MAIL": "matteo.terranova@st.com",
-    "GROUP": "MDRF - EP - GPAM",
-    "Cut": "2.1",
     "SITE": "Catania",
-    "REVISION": "0.1",
-    "stdf": "example.com",
-    "RUN": "1",
+    "GROUP": "MDRF - EP - GPAM",
     "TEST_NUM": [
-        "80003000",
-        "80004000"
+        23200,
+        216000,
+        217000,
+        218000,
+        219000,
+        220000,
+        221000,
+        222000,
+        223000,
+        224000
     ],
-    "CSV": "r44exxxz_q443616_04_st44ez-t2kf1_e_ews1_tat2k06_20250301214005.std"
+    "CSV": "r44exxxz_q443616_04_st44ez-t2kf2_e_ews2_tat2k06_20250305172301.std"
 }

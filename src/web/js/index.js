@@ -110,10 +110,11 @@ document.addEventListener('DOMContentLoaded', function () {
     for (let i = 0; i < data.length; i++) {
       const rowData = data[i];
       if (rowData.Run === '1') {
-        const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer.split(', ').map(Number);
-        const filePath = rowData.File;
+        const wafers = rowData.Wafer === 'All' ? ['All'] : rowData.Wafer === '-' ? ['-'] : rowData.Wafer.split(', ').map(Number);
+        const filePaths = rowData.File;
+        console.log(filePaths);
         for (const wafer of wafers) {
-          const filePath = filePath[wafer];
+          const filePath = filePaths[wafer];
           if (!filePath || !filePath.path || filePath.path.trim() === '' || !filePath.corner || filePath.corner.trim() === '') {
             alert(`Please specify a valid File path and corner for wafer ${wafer} in row ${i + 1}.`);
             return;
@@ -186,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function () {
         updateFileIcon(cell, JSON.stringify(rowData[field]));
         cell.addEventListener('click', () => openOverlay(field, cell));
       } else {
-        // Make cells editable except for specific fields
         if (field !== 'Flow' && field !== 'Type' && field !== 'Wafer') {
           cell.contentEditable = editable;
           cell.addEventListener('input', () => {
@@ -198,14 +198,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         cell.innerText = rowData[field] || '';
 
-        // Disable COM field if Type is TTIME or YIELD
         if (field === 'COM' && (rowData['Type'] === 'TTIME' || rowData['Type'] === 'YIELD')) {
           cell.innerText = rowData['Type'];
           cell.contentEditable = false;
         }
+
+        if (field === 'Type') {
+          if (rowData[field] === 'CONDITION') {
+            const lotCell = row.querySelector('td[data-field="LOT"]');
+            const waferCell = row.querySelector('td[data-field="Wafer"]');
+            const fileCell = row.querySelector('td[data-field="File"]');
+            if (waferCell) {
+              waferCell.innerText = '-';
+              waferCell.classList.add('disabled');
+            }
+            if (lotCell) {
+              lotCell.innerText = '-';
+              lotCell.classList.add('disabled');
+            }
+            if (fileCell) {
+              fileCell.classList.remove('disabled');
+              fileCell.addEventListener('click', () => openOverlay('File', fileCell));
+            }
+          } else if (rowData[field] === 'CONCLUSION') {
+            const lotCell = row.querySelector('td[data-field="LOT"]');
+            const waferCell = row.querySelector('td[data-field="Wafer"]');
+            const fileCell = row.querySelector('td[data-field="File"]');
+            if (waferCell) {
+              waferCell.innerText = '-';
+              waferCell.classList.add('disabled');
+            }
+            if (lotCell) {
+              lotCell.innerText = '-';
+              lotCell.classList.add('disabled');
+            }
+            if (fileCell) {
+              fileCell.innerText = '';
+              updateFileIcon(fileCell, '');
+              fileCell.removeEventListener('click', openOverlay);
+              fileCell.classList.add('disabled');
+            }
+          }
+        }
       }
     });
-    // console.log('Row added:', rowData); // Debug log
   }
 
   // Function to add an empty row to the table
@@ -282,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (field === 'Wafer') {
       createMultiSelectOptions(cell);
     } else if (field === 'File') {
-      createStdfOverlay(cell);
+      createFileOverlay(cell);
     }
     overlay.style.display = 'block';
   }
@@ -296,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function () {
       button.addEventListener('click', function () {
         cell.innerText = option;
 
-        // Update COM field if Type is TTIME or YIELD
         const comCell = cell.parentElement.querySelector('td[data-field="COM"]');
         if (comCell) {
           if (option === 'TTIME' || option === 'YIELD') {
@@ -304,6 +339,56 @@ document.addEventListener('DOMContentLoaded', function () {
             comCell.contentEditable = false;
           } else {
             comCell.contentEditable = true;
+          }
+        }
+
+        const waferCell = cell.parentElement.querySelector('td[data-field="Wafer"]');
+        const lotCell = cell.parentElement.querySelector('td[data-field="LOT"]');
+        const fileCell = cell.parentElement.querySelector('td[data-field="File"]');
+        if (option === 'CONDITION') {
+          if (waferCell) {
+            waferCell.innerText = '-';
+            waferCell.classList.add('disabled');
+          }
+          if (lotCell) {
+            lotCell.innerText = '-';
+            lotCell.classList.add('disabled');
+          }
+          if (fileCell) {
+            fileCell.classList.remove('disabled');
+            fileCell.addEventListener('click', () => openOverlay('File', fileCell));
+          }
+        } else if (option === 'CONCLUSION') {
+          if (waferCell) {
+            waferCell.innerText = '-';
+            waferCell.classList.add('disabled');
+          }
+          if (lotCell) {
+            lotCell.innerText = '-';
+            lotCell.classList.add('disabled');
+          }
+          if (fileCell) {
+            fileCell.innerText = '';
+            updateFileIcon(fileCell, '');
+            fileCell.removeEventListener('click', openOverlay);
+            fileCell.classList.add('disabled');
+          }
+        } else {
+          if (waferCell) {
+            waferCell.classList.remove('disabled');
+            if (waferCell.innerText === '-') {
+              waferCell.innerText = '';
+            }
+          }
+          if (lotCell) {
+            lotCell.classList.remove('disabled');
+            if (lotCell.innerText === '-') {
+              lotCell.innerText = '';
+            }
+          }
+          if (fileCell) {
+            fileCell.classList.remove('disabled');
+            fileCell.addEventListener('click', () => openOverlay('File', fileCell));
           }
         }
 
@@ -365,21 +450,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function createStdfOverlay(cell) {
+  function createFileOverlay(cell) {
     const overlayContent = document.getElementById('overlayContent');
     overlayContent.innerHTML = ''; // Clear previous content
 
-    // Get the wafer numbers from the sibling cell with data-field="Wafer"
     const waferCell = cell.parentElement.querySelector('td[data-field="Wafer"]');
     const wafers =
       waferCell.innerText === 'All'
         ? Array.from({ length: 25 }, (_, i) => i + 1)
+        : waferCell.innerText === '-'
+        ? ['-']
         : waferCell.innerText
             .split(', ')
             .map(Number)
             .sort((a, b) => a - b);
 
-    // Parse existing file paths if available
     let existingPaths = {};
     try {
       existingPaths = cell.dataset.filePath ? JSON.parse(cell.dataset.filePath) : {};
@@ -387,7 +472,6 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Error parsing JSON:', e);
     }
 
-    // Create table for wafer, corner, and File directory
     const div = document.createElement('div');
     div.classList.add('overlayFile');
     const table = document.createElement('table');
@@ -395,43 +479,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const thead = document.createElement('thead');
     thead.classList.add('thead-dark');
     const headerRow = document.createElement('tr');
-    const waferHeader = document.createElement('th');
-    waferHeader.innerText = 'WAFER';
-    const cornerHeader = document.createElement('th');
-    cornerHeader.innerText = 'CORNER';
+
+    if (waferCell.innerText !== '-') {
+      const waferHeader = document.createElement('th');
+      waferHeader.innerText = 'WAFER';
+      headerRow.appendChild(waferHeader);
+
+      const cornerHeader = document.createElement('th');
+      cornerHeader.innerText = 'CORNER';
+      headerRow.appendChild(cornerHeader);
+    }
+
     const fileHeader = document.createElement('th');
     fileHeader.innerText = 'File Directory';
-    headerRow.appendChild(waferHeader);
-    headerRow.appendChild(cornerHeader);
     headerRow.appendChild(fileHeader);
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
 
-    wafers.forEach((wafer, index) => {
+    wafers.forEach((wafer) => {
       const row = document.createElement('tr');
-      const waferCell = document.createElement('td');
-      waferCell.innerText = wafer;
-      const cornerCell = document.createElement('td');
-      cornerCell.innerText = existingPaths[wafer]?.corner || 'TTTT';
-      cornerCell.addEventListener('click', () => openCornerOverlay(cornerCell));
+
+      if (waferCell.innerText !== '-') {
+        const waferCell = document.createElement('td');
+        waferCell.innerText = wafer;
+        row.appendChild(waferCell);
+
+        const cornerCell = document.createElement('td');
+        cornerCell.innerText = existingPaths[wafer]?.corner || 'TTTT';
+        cornerCell.addEventListener('click', () => openCornerOverlay(cornerCell));
+        row.appendChild(cornerCell);
+      }
+
       const fileCell = document.createElement('td');
       const fileInput = document.createElement('input');
       fileInput.type = 'text';
       fileInput.dataset.wafer = wafer;
-      fileInput.value = existingPaths[wafer]?.path || ''; // Load existing path if available
+      fileInput.value = existingPaths[wafer]?.path || '';
       fileInput.placeholder = 'Enter directory path';
       fileInput.addEventListener('input', () => {
-        fileCell.dataset.filePath = fileInput.value;
-        const runCell = cell.parentElement.querySelector('td[data-field="Run"] input[type="checkbox"]');
-        if (runCell) {
-          runCell.checked = true;
-        }
+        existingPaths[wafer] = {
+          corner: waferCell.innerText !== '-' ? row.querySelector('td + td').innerText : 'TTTT',
+          path: fileInput.value,
+        };
       });
       fileCell.appendChild(fileInput);
-      row.appendChild(waferCell);
-      row.appendChild(cornerCell);
       row.appendChild(fileCell);
       tbody.appendChild(row);
     });
@@ -439,20 +532,26 @@ document.addEventListener('DOMContentLoaded', function () {
     table.appendChild(tbody);
     div.appendChild(table);
 
-    // Add save button
     const saveButton = document.createElement('button');
     saveButton.innerText = 'Save';
     saveButton.classList.add('btn', 'btn-primary');
     saveButton.addEventListener('click', () => {
       const filePath = {};
       tbody.querySelectorAll('tr').forEach((row) => {
-        const wafer = row.querySelector('td').innerText;
-        const corner = row.querySelector('td + td').innerText;
-        const filePath = row.querySelector('td + td + td input').value;
-        if (filePath.trim() !== '' && wafer.trim() !== '' && corner.trim() !== '') {
+        let wafer, corner, path;
+        if (waferCell.innerText !== '-') {
+          wafer = row.querySelector('td').innerText;
+          corner = row.querySelector('td + td').innerText;
+          path = row.querySelector('td + td + td input').value;
+        } else {
+          wafer = '-';
+          corner = 'TTTT';
+          path = row.querySelector('td input').value;
+        }
+        if (path.trim() !== '' && (wafer.trim() !== '' || wafers.length === 0) && corner.trim() !== '') {
           filePath[wafer] = {
             corner: corner,
-            path: filePath.replace(/\/[^\/]+\.stdf$/, '/'), // Save only the directory path
+            path: path, // Save the full directory path
           };
         }
       });
