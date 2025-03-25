@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const fileInput = document.createElement('input');
       fileInput.type = 'text';
       fileInput.dataset.wafer = wafer;
-      fileInput.value = existingPaths[wafer]?.path || '';
+      fileInput.value = existingPaths[wafer]?.path || generateFilePath(cell.parentElement.querySelector('td[data-field="Code"]').innerText, cell.parentElement.querySelector('td[data-field="Flow"]').innerText, cell.parentElement.querySelector('td[data-field="LOT"]').innerText, wafer, cell.parentElement.querySelector('td[data-field="Type"]').innerText);
       fileInput.placeholder = 'Enter directory path';
       fileInput.addEventListener('input', () => {
         existingPaths[wafer] = {
@@ -765,4 +765,8 @@ document.addEventListener('DOMContentLoaded', function () {
       closeOverlay();
     }
   });
+
+  function generateFilePath(code, flow, lot, wafer, type) {
+    return `\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\${code}\\${flow}\\${lot}\\${lot}_${wafer}\\${type}`;
+  }
 });

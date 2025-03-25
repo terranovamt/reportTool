@@ -1,3 +1,9 @@
+import asyncio
+import platform
+
+if platform.system() == "Windows":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 import os
 import json
 import warnings
@@ -102,10 +108,14 @@ def copySTDF(stdf_folder):
 
 
 def clearTmpSTDF():
-    tmp_folder = ".\\src\\tmpstdf"
-    for root, dirs, files in os.walk(tmp_folder):
-        for name in files:
-            os.remove(os.path.join(root, name))
+    try:
+        tmp_folder = ".\\src\\tmpstdf"
+        for root, dirs, files in os.walk(tmp_folder):
+            for name in files:
+                os.remove(os.path.join(root, name))
+    except Exception as e:
+        print(f"ERROE:stdf not found {e}")
+        return None
 
 
 def process_wafer(parameter, csv_folder, wafer):
@@ -277,6 +287,27 @@ def process_ttime(parameter, tsr, composite, csv_file, stdf_folder, csv_folder):
 
     test_numbers = tsr.loc[tsr["match_group"].notnull(), "TEST_NUM"].unique().tolist()
 
+    if "EWS" not in str(parameter["FLOW"]).upper():
+        tnum_keys = [
+            "XY_XL",
+            "XY_XH",
+            "XY_YL",
+            "XY_YH",
+            "XY_Waf",
+            "XY_Lot0",
+            "XY_Lot1",
+            "XY_Lot2",
+            "XY_Lot3",
+            "XY_Lot4",
+            "XY_Lot5",
+            "XY_Lot6",
+        ]
+        with open("src/jupiter/personalization.json", "r") as file:
+            data = json.load(file)
+        product_data = data.get(parameter["PRODUCT"], {})
+        for key in tnum_keys:
+            test_numbers.append(product_data.get(key, {}))
+
     if len(test_numbers) == 0:
         print(f"No tests found for composite: {composite}")
         uty.write_log(f"No tests found for composite: {composite}", FILENAME)
@@ -314,6 +345,27 @@ def process_single_composite(
     tsr["match_group"] = match_group[0]
 
     test_numbers = tsr.loc[tsr["match_group"].notnull(), "TEST_NUM"].unique().tolist()
+
+    if "EWS" not in str(parameter["FLOW"]).upper():
+        tnum_keys = [
+            "XY_XL",
+            "XY_XH",
+            "XY_YL",
+            "XY_YH",
+            "XY_Waf",
+            "XY_Lot0",
+            "XY_Lot1",
+            "XY_Lot2",
+            "XY_Lot3",
+            "XY_Lot4",
+            "XY_Lot5",
+            "XY_Lot6",
+        ]
+        with open("src/jupiter/personalization.json", "r") as file:
+            data = json.load(file)
+        product_data = data.get(parameter["PRODUCT"], {})
+        for key in tnum_keys:
+            test_numbers.append(product_data.get(key, {}))
 
     if len(test_numbers) == 0:
         print(f"No tests found for composite: {composite}")
@@ -364,15 +416,30 @@ def convert_notebook_to_html(parameter):
     """
     uty.write_log("Start Jupyter conversion", FILENAME)
     timestartsub = datetime.datetime.now()
-    str_output = (
-        parameter["TITLE"] + " " + parameter["FLOW"] + "_" + parameter["TYPE"].lower()
-    )
+    if "EWS" in str(parameter["FLOW"]).upper():
+        str_output = (
+            parameter["TITLE"]
+            + " "
+            + parameter["FLOW"]
+            + "_"
+            + parameter["TYPE"].lower()
+        )
+    else:
+        str_output = (
+            parameter["TITLE"]
+            + " "
+            + parameter["FLOW"]
+            + "_"
+            + parameter["LOT"].split(" (")[1].replace("FT lot ", "_").replace(")", "")
+            + "_"
+            + parameter["TYPE"].lower()
+        )
     if parameter["LOT"] != "-":
         dir_output = os.path.abspath(
             os.path.join(
                 "Report",
-                f"{parameter['LOT']}",
-                f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
+                f"{parameter['LOT'].split(' (')[0]}",
+                f"{parameter['LOT'].split(' (')[0]}_{str(parameter['WAFER']).rjust(2, '0')}",
                 parameter["FLOW"],
                 parameter["TYPE"].upper(),
             )
@@ -403,62 +470,46 @@ def convert_notebook_to_html(parameter):
 
     uty.write_log("DONE Jupyter conversion", FILENAME)
 
-    return timestartsub
+    return timestartsub, dir_output, str_output
 
 
-def rework_report(parameter):
+def rework_report(parameter, dir_output, str_output):
     """
     Substitute HTML title with TITLE name and add CSS for better report aspect.
 
     Args:
         parameter (dict): Parameters for processing.
     """
-    if parameter["LOT"] != "-":
-        report_path = os.path.abspath(
-            os.path.join(
-                "./Report",
-                f"{parameter['LOT']}",
-                f"{parameter['LOT']}_{str(parameter['WAFER']).rjust(2, '0')}",
-                parameter["FLOW"],
-                parameter["TYPE"].upper(),
-                f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html",
-            )
-        )
-    else:
-        report_path = os.path.abspath(
-            os.path.join(
-                "./Report",
-                f"{parameter['PRODUCT']}",
-                parameter["FLOW"],
-                f"{parameter['TITLE']} {parameter['FLOW']}_{parameter['TYPE'].lower()}.html",
-            )
-        )
+    report_path = os.path.abspath(f"{dir_output}/{str_output}.html")
+
+    title = parameter["TITLE"]
+    new_str = (
+        "<title>"
+        + title
+        + "</title>"
+        + '<link rel="icon" href="https://www.st.com/etc/clientlibs/st-site/media/app/images/favicon.ico">'
+        + '<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>'
+    )
+
     try:
-        with fileinput.FileInput(
-            files=report_path,
-            inplace=True,
-            backup=".bak",
-            encoding="utf8",
-        ) as file:
-            for line_number, line in enumerate(file, start=1):
-                if line_number == 6:
-                    new_str = (
-                        "<title>"
-                        + parameter["TITLE"]
-                        + "</title>"
-                        + '<link rel="icon" href="https://www.st.com/etc/clientlibs/st-site/media/app/images/favicon.ico">'
-                        + '<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>'
-                    )
-                    print(new_str, end="")
-                else:
-                    print(line, end="")
-        os.remove(report_path + ".bak")
+        # Utilizza PowerShell per sostituire la riga 6 del file HTML
+        ps_command = f"""
+        $filePath = "{report_path}"
+        $newContent = "{new_str.replace('"', '`"')}"
+        $lines = Get-Content $filePath
+        $lines[5] = $newContent
+        $lines | Set-Content $filePath
+        """
+        subprocess.run(
+            ["powershell", "-Command", ps_command], check=True, text=True, shell=True
+        )
+
         import webbrowser
 
-        # print(report_path)
-        webbrowser.open(f"file:/{report_path}")
+        webbrowser.open(f"file://{report_path}")
     except Exception as e:
-        print(f"ERROR: {report_path}.bak not deleted: {e}")
+        uty.write_log(f"ERROR: rework_report {e}", FILENAME)
+        print(f"ERROR: rework_report {e}")
 
 
 def pre_exec(parameter):
@@ -493,19 +544,22 @@ def exec(parameter):
     Args:
         parameter (dict): Parameters for processing.
     """
-    if (
-        str(parameter["COM"].upper()) == "YIELD"
-        or str(parameter["TYPE"]).upper() == "CONDITION"
-    ):
-        pass
-    else:
-        rework_stdf(parameter)
-    write_config_file(parameter)
-    timestartsub = convert_notebook_to_html(parameter)
-    post_exec(parameter, timestartsub)
+    try:
+        if (
+            str(parameter["COM"].upper()) == "YIELD"
+            or str(parameter["TYPE"]).upper() == "CONDITION"
+        ):
+            pass
+        else:
+            parameter = rework_stdf(parameter)
+        write_config_file(parameter)
+        timestartsub, dir_output, str_output = convert_notebook_to_html(parameter)
+        post_exec(parameter, timestartsub, dir_output, str_output)
+    except Exception as e:
+        print(f"ERROR execution: {e}")
 
 
-def post_exec(parameter, timestartsub):
+def post_exec(parameter, timestartsub, dir_output, str_output):
     """
     Post-execution function to handle final steps.
 
@@ -513,7 +567,7 @@ def post_exec(parameter, timestartsub):
         parameter (dict): Parameters for processing.
     """
     uty.write_log("postexec START", FILENAME)
-    rework_report(parameter)
+    # rework_report(parameter, dir_output, str_output)
     clearTmpSTDF()
     uty.write_log("postexec DONE", FILENAME)
     timeendsub = datetime.datetime.now()
@@ -556,9 +610,7 @@ def main():
     """
     global debug
     debug = False
-    import asyncio
 
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     guihtml()
 
     # timestart = datetime.datetime.now()

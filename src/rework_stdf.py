@@ -1,6 +1,8 @@
 import os
 import sys
+import json
 import datetime
+import numpy as np
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "jupiter"))
@@ -11,6 +13,7 @@ sys.path.pop()
 debug = False
 
 FILENAME = os.path.abspath("src/run.log")
+
 
 def power_of_10(value):
     if value >= 0:
@@ -65,19 +68,42 @@ def rework_stdf(parameter):
     uty.write_log("Rework STDF START", FILENAME)
     pd.set_option("display.width", None)
 
+    with open("src/jupiter/personalization.json", "r") as file:
+        data = json.load(file)
+
+    product_data = data.get(parameter["PRODUCT"], {})
+    XY_XL = product_data.get("XY_XL", {})
+    XY_XH = product_data.get("XY_XH", {})
+    XY_YL = product_data.get("XY_YL", {})
+    XY_YH = product_data.get("XY_YH", {})
+    XY_Waf = product_data.get("XY_Waf", {})
+    XY_Lot0 = product_data.get("XY_Lot0", {})
+    XY_Lot1 = product_data.get("XY_Lot1", {})
+    XY_Lot2 = product_data.get("XY_Lot2", {})
+    XY_Lot3 = product_data.get("XY_Lot3", {})
+    XY_Lot4 = product_data.get("XY_Lot4", {})
+    XY_Lot5 = product_data.get("XY_Lot5", {})
+    XY_Lot6 = product_data.get("XY_Lot6", {})
+    xwafer = product_data.get("xwafer", [0, 200])
+    ywafer = product_data.get("ywafer", [0, 200])
+
     # ----------==================================================---------- #
     # Read extracted file
     # ----------==================================================---------- #
 
-    test_nums = parameter["TEST_NUM"] if isinstance(parameter["TEST_NUM"], list) else [parameter["TEST_NUM"]]
-    
+    test_nums = (
+        parameter["TEST_NUM"]
+        if isinstance(parameter["TEST_NUM"], list)
+        else [parameter["TEST_NUM"]]
+    )
+
     # PTR Parametric Test Record
     ptr_path = os.path.abspath(f"./src/csv/{parameter['CSV']}.ptr.csv")
     if os.path.exists(ptr_path):
         uty.write_log("Read PTR", FILENAME)
         tmpptr = pd.read_csv(ptr_path, usecols=[0, 1, 5, 6, 7, 10, 11, 12, 13, 14, 15])
         tmpptr = tmpptr[tmpptr["TEST_NUM"].isin(test_nums)]
-    else :
+    else:
         tmpptr = pd.DataFrame()
 
     # FTR Functional Test Record
@@ -86,7 +112,7 @@ def rework_stdf(parameter):
         uty.write_log("Read FTR", FILENAME)
         tmpftr = pd.read_csv(ftr_path, usecols=[0, 1, 4, 23])
         tmpftr = tmpftr[tmpftr["TEST_NUM"].isin(test_nums)]
-    else :
+    else:
         tmpftr = pd.DataFrame()
 
     # MIR Master Information Record
@@ -126,6 +152,53 @@ def rework_stdf(parameter):
     ye = str(round(((goodPart * 100) / gross), 2)) + " %"
     population[temperature] = [goodPart, gross, ye]
     # print(ptr)
+
+    # ----------==================================================---------- #
+    # Recalculate X_COORD Y_COORD
+    # ----------==================================================---------- #
+    if "EWS" not in str(parameter["FLOW"]).upper():
+        # Convert float values to integers before performing bitwise shift
+        combined_X = (
+            tmpptr[tmpptr["TEST_NUM"] == XY_XH]
+            .set_index("PartID")["RESULT"]
+            .astype(int)
+            .apply(lambda x: x << 8)
+        ) + tmpptr[tmpptr["TEST_NUM"] == XY_XL].set_index("PartID")["RESULT"].astype(
+            int
+        )
+
+        combined_Y = (
+            tmpptr[tmpptr["TEST_NUM"] == XY_YH]
+            .set_index("PartID")["RESULT"]
+            .astype(int)
+            .apply(lambda x: x << 8)
+        ) + tmpptr[tmpptr["TEST_NUM"] == XY_YL].set_index("PartID")["RESULT"].astype(
+            int
+        )
+
+        # Map the combined results to the prr DataFrame
+        prr["X_COORD"] = prr["PartID"].map(combined_X)
+        prr["Y_COORD"] = prr["PartID"].map(combined_Y)
+
+        # Apply the range check and set NaN if out of range
+        prr["X_COORD"] = prr["X_COORD"].apply(
+            lambda x: x if xwafer[0] <= x <= xwafer[1] else np.nan
+        )
+        prr["Y_COORD"] = prr["Y_COORD"].apply(
+            lambda y: y if ywafer[0] <= y <= ywafer[1] else np.nan
+        )
+
+        parameter["WAFER"] = str(
+            int(tmpptr[tmpptr["TEST_NUM"] == XY_Waf]["RESULT"].mode().iloc[0])
+        )
+
+        value = "".join(
+            chr(int(tmpptr[tmpptr["TEST_NUM"] == var]["RESULT"].mode().iloc[0]))
+            for var in [XY_Lot0, XY_Lot1, XY_Lot2, XY_Lot3, XY_Lot4, XY_Lot5, XY_Lot6]
+        )
+        parameter["LOT"] = value + " (FT lot " + parameter["LOT"] + ")"
+
+    # ----------==================================================---------- #
 
     # ----------==================================================---------- #
     # Remove retest
@@ -168,8 +241,7 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # FIX ERROR
     # ----------==================================================---------- #
-    
-    
+
     # if composite == "scan":
     #     tmpptr = tmpptr[~tmpptr["TEST_TXT"].str.contains("Stress")]
     # if composite == "RB":
@@ -202,21 +274,25 @@ def rework_stdf(parameter):
         if not tmpptr.empty:
 
             uty.write_log("Result Scale", FILENAME)
-            
-            tmpptr['PARM_FLG'] = tmpptr['PARM_FLG'].astype(str).apply(lambda x: int(x, 2))
+
+            tmpptr["PARM_FLG"] = (
+                tmpptr["PARM_FLG"].astype(str).apply(lambda x: int(x, 2))
+            )
 
             tesnames = tmpptr["TEST_TXT"].unique()
-            
+
             def custom_res_scal(group):
                 # Combina i valori delle tre colonne in una Serie.
-                combined = pd.concat([group['RES_SCAL'], group['LLM_SCAL'], group['HLM_SCAL']])
+                combined = pd.concat(
+                    [group["RES_SCAL"], group["LLM_SCAL"], group["HLM_SCAL"]]
+                )
                 combined = combined[combined != 0]
                 valid_values = [2, 3, 6, 9, 12, 15, 18, -6, -9]
                 combined = combined[combined.isin(valid_values)]
-                
+
                 if combined.empty:
                     return 0
-                
+
                 if all(combined > 0):
                     return combined.max()
                 elif all(combined < 0):
@@ -226,35 +302,59 @@ def rework_stdf(parameter):
 
             for tesname in tesnames:
                 mask = tmpptr["TEST_TXT"] == tesname
-                tmpptr.loc[mask, 'RES_SCAL'] = custom_res_scal(tmpptr[mask])
+                tmpptr.loc[mask, "RES_SCAL"] = custom_res_scal(tmpptr[mask])
 
             # Cast to string before concatenation
             tmpptr["UNITS"] = tmpptr["UNITS"].astype(str)
-            tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"] = "m" + tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"] = "u" + tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"] = "n" + tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"] = "p" + tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"] = "f" + tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"] = "a" + tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"] = "K" + tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"] = "M" + tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"]
-            tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = "G" + tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"]
-            
+            tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"] = (
+                "m" + tmpptr.loc[tmpptr["RES_SCAL"] == 3, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"] = (
+                "u" + tmpptr.loc[tmpptr["RES_SCAL"] == 6, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"] = (
+                "n" + tmpptr.loc[tmpptr["RES_SCAL"] == 9, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"] = (
+                "p" + tmpptr.loc[tmpptr["RES_SCAL"] == 12, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"] = (
+                "f" + tmpptr.loc[tmpptr["RES_SCAL"] == 15, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"] = (
+                "a" + tmpptr.loc[tmpptr["RES_SCAL"] == 18, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"] = (
+                "K" + tmpptr.loc[tmpptr["RES_SCAL"] == -3, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"] = (
+                "M" + tmpptr.loc[tmpptr["RES_SCAL"] == -6, "UNITS"]
+            )
+            tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"] = (
+                "G" + tmpptr.loc[tmpptr["RES_SCAL"] == -9, "UNITS"]
+            )
+
             tmpptr["RESULT"] = tmpptr["RESULT"].astype(float)
-            tmpptr["RESULT"] = round(tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
-            
+            tmpptr["RESULT"] = round(
+                tmpptr["RESULT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
+            ).astype(float)
+
             tmpptr["HI_LIMIT"] = tmpptr["HI_LIMIT"].astype(float)
-            tmpptr["HI_LIMIT"] = round(tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
-            
+            tmpptr["HI_LIMIT"] = round(
+                tmpptr["HI_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
+            ).astype(float)
+
             tmpptr["LO_LIMIT"] = tmpptr["LO_LIMIT"].astype(float)
-            tmpptr["LO_LIMIT"] = round(tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3).astype(float)
-            
+            tmpptr["LO_LIMIT"] = round(
+                tmpptr["LO_LIMIT"] * tmpptr["RES_SCAL"].apply(power_of_10), 3
+            ).astype(float)
+
         # ----------==================================================---------- #
 
         uty.write_log("Split VDD", FILENAME)
-        
-        if "TTIME" not in composite: 
-            
+
+        if "TTIME" not in composite:
+
             # ----------==================================================---------- #
             # SPLIT VDD TESTS
             regex = f"(?P<TestName>.*)(_vio_|_vbt_|_v11_)(?P<VDD>[^_]+)_(?P<COM>{composite})_(?P<TARGET>.*)"
@@ -284,13 +384,13 @@ def rework_stdf(parameter):
             test = test[test["COM"].notna()]
             # uty.write_log("Rework FTR all test done", FILENAME)
             # ----------==================================================---------- #
-        
-        else :
+
+        else:
             # ----------==================================================---------- #
             # SPLIT STANDARD TEST
             regex = f"(?P<COM>log_ttime)__(?P<TestName>.*)::(?P<TARGET>.*)"
             test = tmpptr.copy()
-            test[["COM","TestName", "TARGET"]] = test["TEST_TXT"].str.extract(
+            test[["COM", "TestName", "TARGET"]] = test["TEST_TXT"].str.extract(
                 regex, expand=True
             )
             test["pltype"] = "BPLTEMP"
@@ -312,7 +412,9 @@ def rework_stdf(parameter):
             extracted = clearptr["TARGET"].str.extract(regex, expand=True)
 
             # Combina i risultati in una singola colonna temporanea
-            clearptr["tmp"] = extracted[0].combine_first(extracted[2]).combine_first(extracted[4])
+            clearptr["tmp"] = (
+                extracted[0].combine_first(extracted[2]).combine_first(extracted[4])
+            )
 
             # Estrazione di TARGET e FTYPE
             clearptr["TARGET"] = extracted[1].combine_first(extracted[3])
@@ -397,9 +499,7 @@ def rework_stdf(parameter):
         clearftr = pd.concat([test, testvdd])
 
         if not clearftr.empty:
-            clearftr["TEST_TXT"] = (
-                clearftr.pop("TestName").str.upper()
-            )
+            clearftr["TEST_TXT"] = clearftr.pop("TestName").str.upper()
             clearftr.rename(
                 columns={
                     "TEMPERATURE": "°C",
@@ -441,16 +541,24 @@ def rework_stdf(parameter):
     else:
         os.makedirs("./src/tmp", exist_ok=True)
 
-    ptr.drop(["TestNumber", "RES_SCAL", "LLM_SCAL", "HLM_SCAL", "FTYPE"], axis="columns", inplace=True, errors='ignore')
-    ftr.drop(["TestNumber"], axis="columns", inplace=True, errors='ignore')
+    ptr.drop(
+        ["TestNumber", "RES_SCAL", "LLM_SCAL", "HLM_SCAL", "FTYPE"],
+        axis="columns",
+        inplace=True,
+        errors="ignore",
+    )
+    ftr.drop(["TestNumber"], axis="columns", inplace=True, errors="ignore")
 
     ptr.to_csv(os.path.abspath("./src/tmp/ptr.csv"), index=False)
     ftr.to_csv(os.path.abspath("./src/tmp/ftr.csv"), index=False)
 
+    return parameter
     # uty.write_log("Rework STDF DONE", FILENAME)
+
 
 def main():
     import json
+
     parameter = {
         "TITLE": "MBIST",
         "COM": "mbist",
@@ -471,10 +579,10 @@ def main():
     }
 
     with open("./src/jupiter/cfg.json", "r") as file:
-            content = file.read()
-            if not content.strip():
-                pass
-            parameter = json.loads(content)
+        content = file.read()
+        if not content.strip():
+            pass
+        parameter = json.loads(content)
 
     rework_stdf(parameter)
 

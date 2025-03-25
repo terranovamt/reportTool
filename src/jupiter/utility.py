@@ -214,12 +214,32 @@ def create_gradient(colors, num_colors):
 
 def create_heatmap(td, gradientcolor, xwafer, ywafer):
     import numpy as np
+    import pandas as pd
     import plotly.graph_objects as go
 
     std_dev = np.std(td["Value"])
     step = std_dev / 10
     if step < 1e-5:
         step = std_dev
+
+    additional_data = pd.DataFrame(
+        {
+            "XId": [
+                td["XId"].min() - 1,
+                td["XId"].min() - 1,
+                td["XId"].max() + 1,
+                td["XId"].max() + 1,
+            ],
+            "YId": [
+                td["YId"].min() - 1,
+                td["YId"].max() + 1,
+                td["YId"].min() - 1,
+                td["YId"].max() + 1,
+            ],
+            "Value": [np.nan, np.nan, np.nan, np.nan],
+        }
+    )
+    td = pd.concat([td, additional_data], ignore_index=True)
 
     fig = go.Figure(
         data=go.Heatmap(
@@ -242,12 +262,16 @@ def create_heatmap(td, gradientcolor, xwafer, ywafer):
             zeroline=False,
             showticklabels=False,
             range=xwafer,
+            scaleanchor="x",
+            scaleratio=1,
         ),
         yaxis=dict(
             showgrid=False,
             zeroline=False,
             showticklabels=False,
             range=ywafer[::-1],
+            scaleanchor="y",
+            scaleratio=1,
         ),
         showlegend=False,
         autosize=True,

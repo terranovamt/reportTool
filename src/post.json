@@ -14,16 +14,16 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "4",
+            "Wafer": "6",
             "Cut": "1.1",
             "Revision": "0.1",
             "File": {
-                "4": {
+                "6": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\EWS1\\Q443616\\Q443616_6\\VOLUME"
                 }
             },
-            "Run": "0"
+            "Run": "1"
         },
         {
             "Title": "Yeild Report",
@@ -71,13 +71,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "4",
+            "Wafer": "6",
             "Cut": "2.1",
             "Revision": "0.1",
             "File": {
-                "4": {
+                "6": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\06"
                 }
             },
             "Run": "0"
@@ -128,13 +128,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "4",
+            "Wafer": "6",
             "Cut": "1.1",
             "Revision": "0.1",
             "File": {
-                "4": {
+                "6": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\06"
                 }
             },
             "Run": "0"
@@ -185,13 +185,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "4",
+            "Wafer": "6",
             "Cut": "1.1",
             "Revision": "0.1",
             "File": {
-                "4": {
+                "6": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\06"
                 }
             },
             "Run": "0"
@@ -261,13 +261,13 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "4",
+            "Wafer": "6",
             "Cut": "1.1",
             "Revision": "0.1",
             "File": {
-                "4": {
+                "6": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\06"
                 }
             },
             "Run": "0"
