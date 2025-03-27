@@ -31,7 +31,8 @@
 ::
 ::
 ::978f952a14a936cc963da21a135fa983
-cd "C:\Program Files\Python\Project\ReportTool"
+@echo off
+cd /d "C:\Program Files\Python\Project\ReportTool"
 python ".\main.py"
 
 echo Script completed. Press any key to close...
