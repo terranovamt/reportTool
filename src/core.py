@@ -93,16 +93,15 @@ def process_single_wafer(parameter, csv_folder):
 
 
 def copySTDF(stdf_folder):
+    uty.write_log("Download STDF", FILENAME)
     tmp_folder = ".\\src\\tmpstdf"
     if not os.path.exists(tmp_folder):
         os.makedirs(tmp_folder)
     for fold in stdf_folder:
         for item in os.listdir(fold):
             s = os.path.join(fold, item)
-            d = os.path.join(tmp_folder, item)
-            if os.path.isdir(s):
-                shutil.copytree(s, d, dirs_exist_ok=True)
-            else:
+            if os.path.isfile(s) and s.endswith(".std"):
+                d = os.path.join(tmp_folder, item)
                 shutil.copy2(s, d)
     return [tmp_folder]
 
@@ -134,7 +133,7 @@ def process_wafer(parameter, csv_folder, wafer):
     stdf_folder = get_stdf_folder(parameter, wafer)
     debug and print(stdf_folder, csv_folder)
     stdf_folder = copySTDF(stdf_folder)
-
+    uty.write_log("Extract Tests", FILENAME)
     csv_files = stdf2csv(stdf_folder, csv_folder, "-t")
     for csv_file in csv_files:
         parameter["TEST_NUM"] = []
@@ -437,18 +436,21 @@ def convert_notebook_to_html(parameter):
     if parameter["LOT"] != "-":
         dir_output = os.path.abspath(
             os.path.join(
-                "Report",
+                "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
+                parameter["CODE"],
+                parameter["FLOW"],
                 f"{parameter['LOT'].split(' (')[0]}",
                 f"{parameter['LOT'].split(' (')[0]}_{str(parameter['WAFER']).rjust(2, '0')}",
-                parameter["FLOW"],
                 parameter["TYPE"].upper(),
+                "Report",
+                parameter["FLOW"],
             )
         )
     else:
         dir_output = os.path.abspath(
             os.path.join(
-                "Report",
-                f"{parameter['PRODUCT']}",
+                "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
+                parameter["PRODUCT"],
                 parameter["FLOW"],
             )
         )

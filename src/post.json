@@ -14,16 +14,16 @@
             "Product": "Mosquito512K",
             "Code": "44E",
             "LOT": "Q443616",
-            "Wafer": "6",
+            "Wafer": "4",
             "Cut": "1.1",
             "Revision": "0.1",
             "File": {
-                "6": {
+                "4": {
                     "corner": "TTTT",
-                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\EWS1\\Q443616\\Q443616_6\\VOLUME"
+                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\EWS1\\Q443616\\Q443616_04\\VOLUME"
                 }
             },
-            "Run": "1"
+            "Run": "0"
         },
         {
             "Title": "Yeild Report",
@@ -58,7 +58,7 @@
             "File": {
                 "4": {
                     "corner": "TTTT",
-                    "path": "C:\\Users\\terranom\\OneDrive - STMicroelectronics\\C5 44E Mosquito 512KB\\STDF\\EWS1\\A MANO\\Q443616_04"
+                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\EWS1\\Q443616\\Q443616_04\\VOLUME"
                 }
             },
             "Run": "0"
