@@ -31,7 +31,8 @@
 ::
 ::
 ::978f952a14a936cc963da21a135fa983
-python "C:\Program Files\Python\Project\ReportTool\main.py"
+cd "C:\Program Files\Python\Project\ReportTool" > nul
+python ".\main.py"
 
 echo Script completed. Press any key to close...
 pause >nul
