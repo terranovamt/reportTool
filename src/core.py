@@ -443,7 +443,7 @@ def convert_notebook_to_html(parameter):
                 f"{parameter['LOT'].split(' (')[0]}_{str(parameter['WAFER']).rjust(2, '0')}",
                 parameter["TYPE"].upper(),
                 "Report",
-                parameter["FLOW"],
+                parameter["TYPE"].upper(),
             )
         )
     else:
