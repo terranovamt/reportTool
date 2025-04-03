@@ -457,7 +457,7 @@ def convert_notebook_to_html(parameter):
     if not os.path.exists(dir_output):
         os.makedirs(dir_output)
 
-    cmd = f'jupyter nbconvert --execute --no-input --to html --output "{dir_output}/{str_output}" ./src/jupiter/{str(parameter["TYPE"]).upper()}.ipynb'
+    cmd = f'"C:\\Program Files\\Python\\python.exe" "C:\\Program Files\\Python\\Scripts\\jupyter-nbconvert.exe" ./src/jupiter/{str(parameter["TYPE"]).upper()}.ipynb --execute --no-input --to html --output "{dir_output}/{str_output}" '
     if (
         subprocess.call(
             args=cmd,
