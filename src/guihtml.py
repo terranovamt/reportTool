@@ -6,6 +6,7 @@ import webbrowser
 import http.server
 import socketserver
 import urllib.parse
+from multiprocessing import Process, Queue
 
 PORT = 8000
 MAX_PORT = 8800
@@ -74,7 +75,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'Successfully processed the data')
                 # Process the data
-                threading.Thread(target=self.report_generator, args=(data,)).start()
+                self.queue.put(data)
                 
             else:
                 self.send_response(404)
@@ -90,47 +91,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         data = json.loads(parsed_data['data'][0])
         return data
 
-
-    def report_generator(self, data):
-        with open(POST_FILE, 'w') as jsonfile:
-            json.dump(data, jsonfile, indent=4)
-        debug = False
-        
-        from core import generate
-        generate(data)
-        self.update_run_status()
-        
-
-    def update_run_status(self):
-        with open(POST_FILE, 'r') as jsonfile:
-            data = json.load(jsonfile)
-        
-        # Iterate through the 'data' list and update 'Run' field
-        for item in data.get('data', []):
-            if 'Run' in item and item['Run'] == "1":
-                item['Run'] = "0"
-        
-        # Write the updated data back to the JSON file
-        with open(POST_FILE, 'w') as jsonfile:
-            json.dump(data, jsonfile, indent=4)
-
     def log_message(self, format, *args):
         pass  # Override to suppress logging
 
 class ThreadingSimpleServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
-def start_server(port):
+def start_server(port, queue):
+    Handler.queue = queue
     with ThreadingSimpleServer(("", port), Handler) as httpd:
         ip = socket.gethostbyname(socket.gethostname())
         print(f"Serving at {ip}:{port}")
         httpd.serve_forever()
 
-def find_available_port(start_port, max_port):
+def find_available_port(start_port, max_port, queue):
     port = start_port
     while port <= max_port:
         try:
-            start_server(port)
+            start_server(port, queue)
             break
         except OSError as e:
             if e.errno == socket.errno.EADDRINUSE:
@@ -139,22 +117,55 @@ def find_available_port(start_port, max_port):
             else:
                 raise
 
+def process_data(queue):
+    while True:
+        data = queue.get()
+        if data is None:
+            break
+        report_generator(data)
+
+def report_generator(data):
+    with open(POST_FILE, 'w') as jsonfile:
+        json.dump(data, jsonfile, indent=4)
+    debug = False
+    
+    from core import generate
+    generate(data)
+    update_run_status()
+        
+
+def update_run_status():
+    with open(POST_FILE, 'r') as jsonfile:
+        data = json.load(jsonfile)
+    
+    # Iterate through the 'data' list and update 'Run' field
+    for item in data.get('data', []):
+        if 'Run' in item and item['Run'] == "1":
+            item['Run'] = "0"
+    
+    # Write the updated data back to the JSON file
+    with open(POST_FILE, 'w') as jsonfile:
+        json.dump(data, jsonfile, indent=4)
+
 def guihtml():
     if not os.path.isfile(POST_FILE):
         with open(POST_FILE, 'w') as jsonfile:
             json.dump([], jsonfile)
 
-    server_thread = threading.Thread(target=find_available_port, args=(PORT, MAX_PORT))
+    queue = Queue()
+    server_thread = threading.Thread(target=find_available_port, args=(PORT, MAX_PORT, queue))
     server_thread.daemon = True
     server_thread.start()
     
     webbrowser.open(f"http://localhost:{PORT}")
+
+    process_thread = Process(target=process_data, args=(queue,))
+    process_thread.start()
 
     try:
         while True:
             pass
     except KeyboardInterrupt:
         print("Shutting down server.")
-
-if __name__ == "__main__":
-    guihtml()
+        queue.put(None)
+        process_thread.join()

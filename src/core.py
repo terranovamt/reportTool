@@ -415,32 +415,21 @@ def convert_notebook_to_html(parameter):
     """
     uty.write_log("Start Jupyter conversion", FILENAME)
     timestartsub = datetime.datetime.now()
-    if "EWS" in str(parameter["FLOW"]).upper():
-        str_output = (
-            parameter["TITLE"]
-            + " "
-            + parameter["FLOW"]
-            + "_"
-            + parameter["TYPE"].lower()
-        )
-    else:
-        str_output = (
-            parameter["TITLE"]
-            + " "
-            + parameter["FLOW"]
-            + "_"
-            + parameter["LOT"].split(" (")[1].replace("FT lot ", "_").replace(")", "")
-            + "_"
-            + parameter["TYPE"].lower()
-        )
+    str_output = (
+        parameter["TITLE"]
+        + " "
+        + parameter["FLOW"]
+        + "_"
+        + parameter["TYPE"].lower()
+    )
     if parameter["LOT"] != "-":
         dir_output = os.path.abspath(
             os.path.join(
                 "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
                 parameter["CODE"],
                 parameter["FLOW"],
-                f"{parameter['LOT'].split(' (')[0]}",
-                f"{parameter['LOT'].split(' (')[0]}_{str(parameter['WAFER']).rjust(2, '0')}",
+                f'{parameter["LOT"]}',   
+                f'{parameter["LOT"]}_{str(parameter["WAFER"]).rjust(2, "0")}',
                 parameter["TYPE"].upper(),
                 "Report",
                 parameter["TYPE"].upper(),
@@ -450,8 +439,9 @@ def convert_notebook_to_html(parameter):
         dir_output = os.path.abspath(
             os.path.join(
                 "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
-                parameter["PRODUCT"],
+                parameter["CODE"],
                 parameter["FLOW"],
+                parameter["TYPE"].upper()
             )
         )
     if not os.path.exists(dir_output):

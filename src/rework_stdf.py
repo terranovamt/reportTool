@@ -156,47 +156,55 @@ def rework_stdf(parameter):
     # ----------==================================================---------- #
     # Recalculate X_COORD Y_COORD
     # ----------==================================================---------- #
-    if "EWS" not in str(parameter["FLOW"]).upper():
-        # Convert float values to integers before performing bitwise shift
-        combined_X = (
-            tmpptr[tmpptr["TEST_NUM"] == XY_XH]
-            .set_index("PartID")["RESULT"]
-            .astype(int)
-            .apply(lambda x: x << 8)
-        ) + tmpptr[tmpptr["TEST_NUM"] == XY_XL].set_index("PartID")["RESULT"].astype(
-            int
-        )
+    try:
+        if "EWS" not in str(parameter["FLOW"]).upper():
+            # Convert float values to integers before performing bitwise shift
+            combined_X = (
+                tmpptr[tmpptr["TEST_NUM"] == XY_XH]
+                .set_index("PartID")["RESULT"]
+                .astype(int)
+                .apply(lambda x: x << 8)
+            ) + tmpptr[tmpptr["TEST_NUM"] == XY_XL].set_index("PartID")["RESULT"].astype(
+                int
+            )
 
-        combined_Y = (
-            tmpptr[tmpptr["TEST_NUM"] == XY_YH]
-            .set_index("PartID")["RESULT"]
-            .astype(int)
-            .apply(lambda x: x << 8)
-        ) + tmpptr[tmpptr["TEST_NUM"] == XY_YL].set_index("PartID")["RESULT"].astype(
-            int
-        )
+            combined_Y = (
+                tmpptr[tmpptr["TEST_NUM"] == XY_YH]
+                .set_index("PartID")["RESULT"]
+                .astype(int)
+                .apply(lambda x: x << 8)
+            ) + tmpptr[tmpptr["TEST_NUM"] == XY_YL].set_index("PartID")["RESULT"].astype(
+                int
+            )
 
-        # Map the combined results to the prr DataFrame
-        prr["X_COORD"] = prr["PartID"].map(combined_X)
-        prr["Y_COORD"] = prr["PartID"].map(combined_Y)
+            # Map the combined results to the prr DataFrame
+            prr["X_COORD"] = prr["PartID"].map(combined_X)
+            prr["Y_COORD"] = prr["PartID"].map(combined_Y)
 
-        # Apply the range check and set NaN if out of range
-        prr["X_COORD"] = prr["X_COORD"].apply(
-            lambda x: x if xwafer[0] <= x <= xwafer[1] else np.nan
-        )
-        prr["Y_COORD"] = prr["Y_COORD"].apply(
-            lambda y: y if ywafer[0] <= y <= ywafer[1] else np.nan
-        )
+            # Apply the range check and set NaN if out of range
+            prr["X_COORD"] = prr["X_COORD"].apply(
+                lambda x: x if xwafer[0] <= x <= xwafer[1] else np.nan
+            )
+            prr["Y_COORD"] = prr["Y_COORD"].apply(
+                lambda y: y if ywafer[0] <= y <= ywafer[1] else np.nan
+            )
 
-        parameter["WAFER"] = str(
-            int(tmpptr[tmpptr["TEST_NUM"] == XY_Waf]["RESULT"].mode().iloc[0])
-        )
+            parameter["EWSWAFER"] = str(
+                int(tmpptr[tmpptr["TEST_NUM"] == XY_Waf]["RESULT"].mode().iloc[0])
+            )
 
-        value = "".join(
-            chr(int(tmpptr[tmpptr["TEST_NUM"] == var]["RESULT"].mode().iloc[0]))
-            for var in [XY_Lot0, XY_Lot1, XY_Lot2, XY_Lot3, XY_Lot4, XY_Lot5, XY_Lot6]
-        )
-        parameter["LOT"] = value + " (FT lot " + parameter["LOT"] + ")"
+            value = "".join(
+                chr(int(tmpptr[tmpptr["TEST_NUM"] == var]["RESULT"].mode().iloc[0]))
+                for var in [XY_Lot0, XY_Lot1, XY_Lot2, XY_Lot3, XY_Lot4, XY_Lot5, XY_Lot6]
+            )
+            parameter["EWSLOT"] = value + " (FT lot " + parameter["LOT"] + ")"
+        else:
+            parameter["EWSWAFER"] = mir.SBLOT_ID[0] if not pd.isna(mir.SBLOT_ID[0]) else parameter["WAFER"]
+            parameter["EWSLOT"] = mir.LOT_ID[0] if not pd.isna(mir.LOT_ID[0]) else parameter["LOT"]
+
+
+    except Exception as e:
+        print(f"ERROR: UID Test number wrong ({e})")
 
     # ----------==================================================---------- #
 
