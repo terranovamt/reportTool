@@ -767,6 +767,9 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function generateFilePath(code, flow, lot, wafer, type) {
+    if (type === 'CONDITION') {
+      return `\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\${code}\\${flow}\\${type}`;
+    }
     if (type === 'TTIME' || type === 'YIELD') {
       type = 'VOLUME';
     }

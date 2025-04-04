@@ -458,7 +458,18 @@ def convert_notebook_to_html(parameter):
     ):
         pass
     else:
-        print(f"ERROR: execution failed {cmd}")
+        cmd = f'jupyter nbconvert --execute --no-input --to html --output "{dir_output}/{str_output}" ./src/jupiter/{str(parameter["TYPE"]).upper()}.ipynb'
+        if (
+            subprocess.call(
+                args=cmd,
+                shell=True,
+                stdout=subprocess.DEVNULL,
+            )
+            == 0
+        ):
+            pass
+        else:
+            print(f"ERROR: execution failed {cmd}")
 
     uty.write_log("DONE Jupyter conversion", FILENAME)
 

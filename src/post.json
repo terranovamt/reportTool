@@ -349,9 +349,9 @@
             "Run": "0"
         },
         {
-            "Title": "Analog to Digital Converter",
-            "COM": "ADC",
-            "Flow": "FT1",
+            "Title": "HSI 144MHz",
+            "COM": "HSI",
+            "Flow": "EWS1",
             "Type": "CONDITION",
             "Product": "Mosquito512K",
             "Code": "44E",
@@ -362,7 +362,7 @@
             "File": {
                 "-": {
                     "corner": "TTTT",
-                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\FT1"
+                    "path": "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\44E\\EWS1"
                 }
             },
             "Run": "0"
