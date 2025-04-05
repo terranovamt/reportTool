@@ -416,11 +416,7 @@ def convert_notebook_to_html(parameter):
     uty.write_log("Start Jupyter conversion", FILENAME)
     timestartsub = datetime.datetime.now()
     str_output = (
-        parameter["TITLE"]
-        + " "
-        + parameter["FLOW"]
-        + "_"
-        + parameter["TYPE"].lower()
+        parameter["TITLE"] + " " + parameter["FLOW"] + "_" + parameter["TYPE"].lower()
     )
     if parameter["LOT"] != "-":
         dir_output = os.path.abspath(
@@ -428,7 +424,7 @@ def convert_notebook_to_html(parameter):
                 "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
                 parameter["CODE"],
                 parameter["FLOW"],
-                f'{parameter["LOT"]}',   
+                f'{parameter["LOT"]}',
                 f'{parameter["LOT"]}_{str(parameter["WAFER"]).rjust(2, "0")}',
                 parameter["TYPE"].upper(),
                 "Report",
@@ -441,7 +437,7 @@ def convert_notebook_to_html(parameter):
                 "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
                 parameter["CODE"],
                 parameter["FLOW"],
-                parameter["TYPE"].upper()
+                parameter["TYPE"].upper(),
             )
         )
     if not os.path.exists(dir_output):
@@ -607,6 +603,18 @@ def generate(data):
     print("|--> Total execution time:", timeexec)
 
 
+def resetpost(file_path):
+    print("Reset post.json")
+    with open(file_path, "r") as file:
+        data = json.load(file)
+
+    for item in data["data"]:
+        item["Run"] = "0"
+
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
+
+
 def main():
     """
     Main function to execute the report generation process.
@@ -614,7 +622,9 @@ def main():
     global debug
     debug = False
 
+    resetpost("./src/resource/post.json")
     guihtml()
+    resetpost("./src/resource/post.json")
 
     # timestart = datetime.datetime.now()
     # parameters = read_parameters("workload.csv")
