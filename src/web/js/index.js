@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function generateFilePath(code, flow, lot, wafer, type) {
     if (type === 'CONDITION') {
-      return `\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\${code}\\${flow}\\${type}`;
+      return `\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\${code}\\${flow}`;
     }
     if (type === 'TTIME' || type === 'YIELD') {
       type = 'VOLUME';
@@ -779,3 +779,19 @@ document.addEventListener('DOMContentLoaded', function () {
     return `\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF\\${code}\\${flow}\\${lot}\\${lot}_${wafer}\\${type}`;
   }
 });
+
+function checkStatus() {
+  fetch('/post.json')
+    .then((response) => response.json())
+    .then((data) => {
+      // Check if all items have 'Run' set to '0'
+      if (data.data.every((item) => item.Run === '1')) {
+        window.location.href = '/loading';
+      }
+    })
+    .catch((error) => console.error('Error:', error));
+}
+
+window.onload = function () {
+  checkStatus();
+};
