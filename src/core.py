@@ -425,12 +425,7 @@ def convert_notebook_to_html(parameter):
     if parameter["LOT"] != "-":
         dir_output = os.path.abspath(
             os.path.join(
-                "\\\\gpm-pe-data.gnb.st.com\\ENGI_MCD_STDF",
-                parameter["CODE"],
-                parameter["FLOW"],
-                f'{parameter["LOT"]}',   
-                f'{parameter["LOT"]}_{str(parameter["WAFER"]).rjust(2, "0")}',
-                parameter["TYPE"].upper(),
+                parameter["FILE"][parameter["WAFER"]]["path"],
                 "Report",
                 parameter["TYPE"].upper(),
             )
